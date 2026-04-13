@@ -26,7 +26,7 @@ const Index = () => {
             </div>
           </div>
           {!apiAvailable && (
-            <span className="text-xs bg-amber-100 text-amber-700 px-2.5 py-1 rounded-full font-medium">
+            <span className="text-xs bg-accent text-accent-foreground px-2.5 py-1 rounded-full font-medium">
               Demo Mode
             </span>
           )}

@@ -5,7 +5,7 @@ import { cn } from '@/lib/utils';
 
 const priorityStyles: Record<string, string> = {
   high: 'bg-destructive/10 text-destructive',
-  medium: 'bg-amber-100 text-amber-700',
+  medium: 'bg-accent text-accent-foreground',
   low: 'bg-muted text-muted-foreground',
 };
 
