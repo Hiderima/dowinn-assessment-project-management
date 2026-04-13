@@ -160,5 +160,5 @@ export function useProjects() {
 
   const selectedProject = projects.find(p => p.id === selectedProjectId);
 
-  return { projects, selectedProject, selectedProjectId, setSelectedProjectId, tasks, loading, moveTask, addProject, updateProject, addTask, seedDatabase };
+  return { projects, selectedProject, selectedProjectId, setSelectedProjectId, tasks, loading, moveTask, addProject, updateProject, addTask, updateTaskDates, seedDatabase };
 }
