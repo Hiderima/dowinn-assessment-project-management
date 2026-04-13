@@ -1,5 +1,5 @@
 import { Draggable } from '@hello-pangea/dnd';
-import { Clock, MessageSquare, User } from 'lucide-react';
+import { Clock, MessageSquare, User, Pencil } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import type { TaskWithChangelog } from '@/hooks/useProjects';
 
@@ -13,9 +13,10 @@ interface Props {
   task: TaskWithChangelog;
   index: number;
   onOpenLog: (task: TaskWithChangelog) => void;
+  onEdit?: (task: TaskWithChangelog) => void;
 }
 
-export function TaskCard({ task, index, onOpenLog }: Props) {
+export function TaskCard({ task, index, onOpenLog, onEdit }: Props) {
   return (
     <Draggable draggableId={task.id} index={index}>
       {(provided, snapshot) => (
@@ -46,14 +47,25 @@ export function TaskCard({ task, index, onOpenLog }: Props) {
                 <Clock className="w-3 h-3" /> {new Date(task.created_at).toLocaleDateString()}
               </span>
             </div>
-            <button
-              onClick={(e) => { e.stopPropagation(); onOpenLog(task); }}
-              className="flex items-center gap-1 text-xs hover:text-primary transition-colors"
-              title="View change log"
-            >
-              <MessageSquare className="w-3 h-3" />
-              {task.changelog.length}
-            </button>
+            <div className="flex items-center gap-2">
+              {onEdit && (
+                <button
+                  onClick={(e) => { e.stopPropagation(); onEdit(task); }}
+                  className="flex items-center gap-1 text-xs hover:text-primary transition-colors"
+                  title="Edit task"
+                >
+                  <Pencil className="w-3 h-3" />
+                </button>
+              )}
+              <button
+                onClick={(e) => { e.stopPropagation(); onOpenLog(task); }}
+                className="flex items-center gap-1 text-xs hover:text-primary transition-colors"
+                title="View change log"
+              >
+                <MessageSquare className="w-3 h-3" />
+                {task.changelog.length}
+              </button>
+            </div>
           </div>
         </div>
       )}
