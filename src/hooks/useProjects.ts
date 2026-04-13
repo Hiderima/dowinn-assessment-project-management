@@ -46,9 +46,9 @@ export function useProjects() {
     }
   }, [user, selectedProjectId]);
 
-  const fetchTasks = useCallback(async (projectId: string) => {
+  const fetchTasks = useCallback(async (projectId: string, isBackground = false) => {
     if (!projectId) { setTasks([]); return; }
-    setLoading(true);
+    if (!isBackground) setLoading(true);
 
     let query = supabase
       .from('tasks')
@@ -61,7 +61,7 @@ export function useProjects() {
 
     const { data, error } = await query;
 
-    if (error) { toast.error('Failed to load tasks'); setLoading(false); return; }
+    if (error) { toast.error('Failed to load tasks'); if (!isBackground) setLoading(false); return; }
 
     const mapped: TaskWithChangelog[] = (data || []).map((t: any) => ({
       ...t,
@@ -76,31 +76,23 @@ export function useProjects() {
   useEffect(() => { if (selectedProjectId) fetchTasks(selectedProjectId); }, [selectedProjectId]);
 
   const moveTask = useCallback(async (taskId: string, newStatus: 'todo' | 'in_progress' | 'done') => {
-    // Optimistic update
     setTasks(prev => prev.map(t => t.id === taskId ? { ...t, status: newStatus } : t));
-
     const { error } = await supabase.from('tasks').update({ status: newStatus }).eq('id', taskId);
-    if (error) { toast.error('Failed to update task'); fetchTasks(selectedProjectId); return; }
-
-    // Add changelog entry
-    await supabase.from('task_changelog').insert({
-      task_id: taskId,
-      message: `Status changed to ${newStatus.replace('_', ' ')}`,
-    });
-
-    fetchTasks(selectedProjectId);
+    if (error) { toast.error('Failed to update task'); fetchTasks(selectedProjectId, true); return; }
+    await supabase.from('task_changelog').insert({ task_id: taskId, message: `Status changed to ${newStatus.replace('_', ' ')}` });
+    fetchTasks(selectedProjectId, true);
   }, [selectedProjectId, fetchTasks]);
 
   const updateTaskDates = useCallback(async (taskId: string, startDate: string, endDate: string) => {
     setTasks(prev => prev.map(t => t.id === taskId ? { ...t, start_date: startDate, end_date: endDate } : t));
     const { error } = await supabase.from('tasks').update({ start_date: startDate, end_date: endDate } as any).eq('id', taskId);
-    if (error) { toast.error('Failed to update dates'); fetchTasks(selectedProjectId); }
+    if (error) { toast.error('Failed to update dates'); fetchTasks(selectedProjectId, true); }
   }, [selectedProjectId, fetchTasks]);
 
   const updateTaskTimes = useCallback(async (taskId: string, startTime: string, endTime: string) => {
     setTasks(prev => prev.map(t => t.id === taskId ? { ...t, start_time: startTime, end_time: endTime } as any : t));
     const { error } = await supabase.from('tasks').update({ start_time: startTime, end_time: endTime } as any).eq('id', taskId);
-    if (error) { toast.error('Failed to update times'); fetchTasks(selectedProjectId); }
+    if (error) { toast.error('Failed to update times'); fetchTasks(selectedProjectId, true); }
   }, [selectedProjectId, fetchTasks]);
 
   const updateTask = useCallback(async (taskId: string, updates: { title: string; description: string; priority: 'low' | 'medium' | 'high'; assignee: string; status: 'todo' | 'in_progress' | 'done' }) => {
@@ -112,16 +104,16 @@ export function useProjects() {
       assignee: updates.assignee || null,
       status: updates.status,
     }).eq('id', taskId);
-    if (error) { toast.error('Failed to update task'); fetchTasks(selectedProjectId); return; }
+    if (error) { toast.error('Failed to update task'); fetchTasks(selectedProjectId, true); return; }
     toast.success('Task updated');
     await supabase.from('task_changelog').insert({ task_id: taskId, message: `Task updated — status: ${updates.status.replace('_', ' ')}` });
-    fetchTasks(selectedProjectId);
+    fetchTasks(selectedProjectId, true);
   }, [selectedProjectId, fetchTasks]);
 
   const deleteTask = useCallback(async (taskId: string) => {
     setTasks(prev => prev.filter(t => t.id !== taskId));
     const { error } = await supabase.from('tasks').delete().eq('id', taskId);
-    if (error) { toast.error('Failed to delete task'); fetchTasks(selectedProjectId); return; }
+    if (error) { toast.error('Failed to delete task'); fetchTasks(selectedProjectId, true); return; }
     toast.success('Task deleted');
     await fetchProjects();
   }, [selectedProjectId, fetchTasks, fetchProjects]);
@@ -154,8 +146,8 @@ export function useProjects() {
 
     await supabase.from('task_changelog').insert({ task_id: data.id, message: 'Task created' });
     toast.success('Task created');
-    await fetchTasks(selectedProjectId);
-    await fetchProjects(); // update task count
+    await fetchTasks(selectedProjectId, true);
+    await fetchProjects();
   }, [selectedProjectId, fetchTasks, fetchProjects]);
 
   const seedDatabase = useCallback(async () => {
