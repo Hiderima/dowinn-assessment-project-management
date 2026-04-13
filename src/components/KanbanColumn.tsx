@@ -14,7 +14,7 @@ interface Props {
 
 export function KanbanColumn({ status, title, colorVar, tasks, onOpenLog, onEdit }: Props) {
   return (
-    <div className="flex flex-col min-w-0">
+    <div className="flex-1 min-w-[300px] flex flex-col">
       <div className="flex items-center gap-2.5 mb-4 px-1">
         <div className="w-2.5 h-2.5 rounded-full" style={{ backgroundColor: `hsl(${colorVar})` }} />
         <h3 className="text-sm font-semibold text-foreground">{title}</h3>
@@ -25,10 +25,7 @@ export function KanbanColumn({ status, title, colorVar, tasks, onOpenLog, onEdit
           <div
             ref={provided.innerRef}
             {...provided.droppableProps}
-            className={cn(
-              'flex-1 space-y-2.5 p-2 rounded-lg min-h-[200px] transition-[background-color,box-shadow] duration-200 ease-out motion-reduce:transition-none',
-              snapshot.isDraggingOver ? 'bg-primary/5 ring-1 ring-primary/15 shadow-sm' : 'bg-muted/30'
-            )}
+            className={cn('flex-1 space-y-2.5 p-2 rounded-lg transition-colors min-h-[200px]', snapshot.isDraggingOver ? 'bg-primary/5' : 'bg-muted/30')}
           >
             {tasks.map((task, i) => (
               <TaskCard key={task.id} task={task} index={i} onOpenLog={onOpenLog} onEdit={onEdit} />

@@ -146,7 +146,7 @@ export function TimelineView({ tasks, onUpdateDates, onUpdateTimes, onEditTask }
               {tasks.map(task => (
                 <div
                   key={task.id}
-                  className="flex items-center gap-2 px-3 border-b border-border/30 hover:bg-muted/30 transition-all duration-200 cursor-pointer group animate-task-enter"
+                  className="flex items-center gap-2 px-3 border-b border-border/30 hover:bg-muted/30 transition-colors cursor-pointer group"
                   style={{ height: ROW_HEIGHT }}
                   onClick={() => onEditTask?.(task)}
                 >
