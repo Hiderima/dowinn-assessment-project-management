@@ -58,10 +58,9 @@ const Index = () => {
         </header>
 
         <div className="flex-1 overflow-auto">
-          {/* Progress + Pie Chart side by side for individual projects */}
+          {/* Pie Chart (left) + Progress Bar (right) for individual projects */}
           {selectedProjectId !== 'all' && tasks.length > 0 && (
-            <div className="px-6 pt-4 grid grid-cols-1 lg:grid-cols-[1fr_auto] gap-5 items-start">
-              <ProjectProgressBar tasks={tasks} />
+            <div className="px-6 pt-4 grid grid-cols-1 lg:grid-cols-[auto_1fr] gap-5 items-start">
               <div className="bg-card rounded-xl border p-4">
                 <h2 className="text-xs font-semibold text-card-foreground mb-3 flex items-center gap-1.5">
                   <PieIcon className="w-3.5 h-3.5 text-primary" />
@@ -69,6 +68,7 @@ const Index = () => {
                 </h2>
                 <TaskStatusPieChart tasks={tasks} />
               </div>
+              <ProjectProgressBar tasks={tasks} />
             </div>
           )}
 
@@ -86,7 +86,7 @@ const Index = () => {
                   Timesheet & Gantt Chart
                 </h2>
                 <div className="grid grid-cols-1 xl:grid-cols-[minmax(0,1fr)_minmax(0,1.5fr)] gap-5">
-                  <Timesheet tasks={tasks} />
+                  <Timesheet tasks={tasks} onUpdateDates={updateTaskDates} />
                   <div className="border-l pl-5">
                     <GanttChart tasks={tasks} onUpdateDates={updateTaskDates} />
                   </div>
@@ -117,7 +117,7 @@ const Index = () => {
                       Timesheet & Gantt Chart — All Projects
                     </h2>
                     <div className="grid grid-cols-1 xl:grid-cols-[minmax(0,1fr)_minmax(0,1.5fr)] gap-5">
-                      <Timesheet tasks={tasks} />
+                      <Timesheet tasks={tasks} onUpdateDates={updateTaskDates} />
                       <div className="border-l pl-5">
                         <GanttChart tasks={tasks} onUpdateDates={updateTaskDates} />
                       </div>

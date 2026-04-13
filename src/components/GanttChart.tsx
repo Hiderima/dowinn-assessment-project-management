@@ -1,6 +1,6 @@
 import { useState, useRef, useCallback, useEffect, useMemo } from 'react';
-import { format, differenceInDays, addDays, parseISO, startOfDay } from 'date-fns';
-import { Calendar as CalendarIcon } from 'lucide-react';
+import { format, differenceInDays, addDays, parseISO, startOfDay, subDays } from 'date-fns';
+import { Calendar as CalendarIcon, ChevronLeft, ChevronRight } from 'lucide-react';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { Calendar } from '@/components/ui/calendar';
 import { cn } from '@/lib/utils';
@@ -19,10 +19,18 @@ const statusColor: Record<string, string> = {
 
 export function GanttChart({ tasks, onUpdateDates }: Props) {
   const containerRef = useRef<HTMLDivElement>(null);
+  const [viewOffset, setViewOffset] = useState(0); // days offset for navigation
 
   // Compute timeline range
   const { timelineStart, totalDays, dayWidth } = useMemo(() => {
-    if (tasks.length === 0) return { timelineStart: new Date(), totalDays: 14, dayWidth: 40 };
+    const basePadBefore = 2;
+    const basePadAfter = 5;
+    const minDays = 21;
+
+    if (tasks.length === 0) {
+      const start = addDays(startOfDay(new Date()), viewOffset - 7);
+      return { timelineStart: start, totalDays: minDays, dayWidth: 40 };
+    }
 
     const dates = tasks.flatMap(t => {
       const s = t.start_date ? parseISO(t.start_date) : new Date(t.created_at);
@@ -30,53 +38,85 @@ export function GanttChart({ tasks, onUpdateDates }: Props) {
       return [s, e];
     });
 
-    const minDate = addDays(new Date(Math.min(...dates.map(d => d.getTime()))), -2);
-    const maxDate = addDays(new Date(Math.max(...dates.map(d => d.getTime()))), 5);
-    const days = Math.max(14, differenceInDays(maxDate, minDate));
+    const minDate = addDays(new Date(Math.min(...dates.map(d => d.getTime()))), -basePadBefore + viewOffset);
+    const maxDate = addDays(new Date(Math.max(...dates.map(d => d.getTime()))), basePadAfter + viewOffset);
+    const days = Math.max(minDays, differenceInDays(maxDate, minDate));
     return { timelineStart: startOfDay(minDate), totalDays: days, dayWidth: 40 };
-  }, [tasks]);
+  }, [tasks, viewOffset]);
 
   // Generate day headers
   const dayHeaders = useMemo(() => {
     return Array.from({ length: totalDays }, (_, i) => addDays(timelineStart, i));
   }, [timelineStart, totalDays]);
 
-  if (tasks.length === 0) return <div className="text-sm text-muted-foreground text-center py-8">No tasks</div>;
-
   return (
-    <div className="overflow-x-auto" ref={containerRef}>
-      <div style={{ minWidth: totalDays * dayWidth + 200 }}>
-        {/* Day headers */}
-        <div className="flex border-b sticky top-0 bg-card z-10">
-          <div className="w-[200px] flex-shrink-0" />
-          <div className="flex">
-            {dayHeaders.map((day, i) => (
-              <div
-                key={i}
-                className={cn(
-                  'text-center text-[10px] text-muted-foreground py-1 border-l border-border/30',
-                  day.getDay() === 0 || day.getDay() === 6 ? 'bg-muted/20' : ''
-                )}
-                style={{ width: dayWidth }}
-              >
-                <div className="font-medium">{format(day, 'dd')}</div>
-                <div>{format(day, 'MMM')}</div>
-              </div>
-            ))}
-          </div>
-        </div>
+    <div>
+      {/* Navigation buttons */}
+      <div className="flex items-center justify-between mb-2">
+        <button
+          onClick={() => setViewOffset(v => v - 7)}
+          className="flex items-center gap-1 px-2 py-1 text-xs rounded-md text-muted-foreground hover:bg-muted hover:text-foreground transition-colors"
+        >
+          <ChevronLeft className="w-3.5 h-3.5" />
+          Previous
+        </button>
+        <button
+          onClick={() => setViewOffset(0)}
+          className="px-2 py-1 text-xs rounded-md text-muted-foreground hover:bg-muted hover:text-foreground transition-colors"
+        >
+          Today
+        </button>
+        <button
+          onClick={() => setViewOffset(v => v + 7)}
+          className="flex items-center gap-1 px-2 py-1 text-xs rounded-md text-muted-foreground hover:bg-muted hover:text-foreground transition-colors"
+        >
+          Next
+          <ChevronRight className="w-3.5 h-3.5" />
+        </button>
+      </div>
 
-        {/* Task rows */}
-        {tasks.map(task => (
-          <GanttRow
-            key={task.id}
-            task={task}
-            timelineStart={timelineStart}
-            totalDays={totalDays}
-            dayWidth={dayWidth}
-            onUpdateDates={onUpdateDates}
-          />
-        ))}
+      <div className="overflow-x-auto" ref={containerRef}>
+        <div style={{ minWidth: totalDays * dayWidth + 200 }}>
+          {/* Day headers */}
+          <div className="flex border-b sticky top-0 bg-card z-10">
+            <div className="w-[200px] flex-shrink-0" />
+            <div className="flex">
+              {dayHeaders.map((day, i) => {
+                const isToday = format(day, 'yyyy-MM-dd') === format(new Date(), 'yyyy-MM-dd');
+                return (
+                  <div
+                    key={i}
+                    className={cn(
+                      'text-center text-[10px] text-muted-foreground py-1 border-l border-border/30',
+                      day.getDay() === 0 || day.getDay() === 6 ? 'bg-muted/20' : '',
+                      isToday ? 'bg-primary/10 font-bold text-primary' : ''
+                    )}
+                    style={{ width: dayWidth }}
+                  >
+                    <div className="font-medium">{format(day, 'dd')}</div>
+                    <div>{format(day, 'MMM')}</div>
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+
+          {/* Task rows */}
+          {tasks.length === 0 ? (
+            <div className="text-sm text-muted-foreground text-center py-8">No tasks — use navigation to browse dates</div>
+          ) : (
+            tasks.map(task => (
+              <GanttRow
+                key={task.id}
+                task={task}
+                timelineStart={timelineStart}
+                totalDays={totalDays}
+                dayWidth={dayWidth}
+                onUpdateDates={onUpdateDates}
+              />
+            ))
+          )}
+        </div>
       </div>
     </div>
   );
