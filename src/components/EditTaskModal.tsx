@@ -23,6 +23,7 @@ export function EditTaskModal({ open, task, onClose, onUpdate, onDelete }: Props
       setTitle(task.title);
       setDescription(task.description || '');
       setPriority(task.priority);
+      setStatus(task.status);
       setAssignee(task.assignee || '');
       setConfirmDelete(false);
     }
@@ -33,7 +34,7 @@ export function EditTaskModal({ open, task, onClose, onUpdate, onDelete }: Props
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (!title.trim()) return;
-    onUpdate(task.id, { title: title.trim(), description: description.trim(), priority, assignee: assignee.trim() });
+    onUpdate(task.id, { title: title.trim(), description: description.trim(), priority, assignee: assignee.trim(), status });
     onClose();
   };
 
