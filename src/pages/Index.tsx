@@ -83,7 +83,7 @@ const Index = () => {
                       <PieIcon className="w-4 h-4 text-primary" />
                       Overall Task Distribution
                     </h2>
-                    <TaskStatusPieChart tasks={tasks} />
+                    <TaskStatusPieChart tasks={tasks} projects={projects} />
                   </div>
                   <div className="bg-card rounded-xl border p-5">
                     <h2 className="text-sm font-semibold text-card-foreground mb-4 flex items-center gap-2">
