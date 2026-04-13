@@ -91,6 +91,13 @@ export function useProjects() {
     fetchTasks(selectedProjectId);
   }, [selectedProjectId, fetchTasks]);
 
+  const updateTaskDates = useCallback(async (taskId: string, startDate: string, endDate: string) => {
+    // Optimistic update
+    setTasks(prev => prev.map(t => t.id === taskId ? { ...t, start_date: startDate, end_date: endDate } : t));
+    const { error } = await supabase.from('tasks').update({ start_date: startDate, end_date: endDate } as any).eq('id', taskId);
+    if (error) { toast.error('Failed to update dates'); fetchTasks(selectedProjectId); }
+  }, [selectedProjectId, fetchTasks]);
+
   const addProject = useCallback(async (name: string, description: string) => {
     if (!user) return;
     const { error } = await supabase.from('projects').insert({ name, description, user_id: user.id });
