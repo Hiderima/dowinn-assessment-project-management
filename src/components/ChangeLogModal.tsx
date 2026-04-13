@@ -1,8 +1,8 @@
 import { X, Clock } from 'lucide-react';
-import type { Task } from '@/types/project';
+import type { TaskWithChangelog } from '@/hooks/useProjects';
 
 interface Props {
-  task: Task;
+  task: TaskWithChangelog;
   onClose: () => void;
 }
 
@@ -20,7 +20,6 @@ export function ChangeLogModal({ task, onClose }: Props) {
             <X className="w-4 h-4 text-muted-foreground" />
           </button>
         </div>
-
         <div className="p-5 max-h-80 overflow-y-auto">
           {task.changelog.length === 0 ? (
             <p className="text-sm text-muted-foreground text-center py-8">No history yet</p>
@@ -32,7 +31,7 @@ export function ChangeLogModal({ task, onClose }: Props) {
                   <p className="text-sm text-card-foreground">{entry.message}</p>
                   <p className="text-xs text-muted-foreground flex items-center gap-1 mt-0.5">
                     <Clock className="w-3 h-3" />
-                    {new Date(entry.timestamp).toLocaleString()}
+                    {new Date(entry.created_at).toLocaleString()}
                   </p>
                 </div>
               ))}
