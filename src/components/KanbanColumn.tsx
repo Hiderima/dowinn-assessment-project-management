@@ -25,7 +25,7 @@ export function KanbanColumn({ status, title, colorVar, tasks, onOpenLog, onEdit
           <div
             ref={provided.innerRef}
             {...provided.droppableProps}
-            className={cn('flex-1 space-y-2.5 p-2 rounded-lg transition-colors min-h-[200px]', snapshot.isDraggingOver ? 'bg-primary/5' : 'bg-muted/30')}
+            className={cn('flex-1 space-y-2.5 p-2 rounded-lg transition-colors min-h-[200px] overflow-visible', snapshot.isDraggingOver ? 'bg-primary/5' : 'bg-muted/30')}
           >
             {tasks.map((task, i) => (
               <TaskCard key={task.id} task={task} index={i} onOpenLog={onOpenLog} onEdit={onEdit} />
