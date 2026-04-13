@@ -6,7 +6,7 @@ interface Props {
   open: boolean;
   task: TaskWithChangelog | null;
   onClose: () => void;
-  onUpdate: (taskId: string, updates: { title: string; description: string; priority: 'low' | 'medium' | 'high'; assignee: string }) => void;
+  onUpdate: (taskId: string, updates: { title: string; description: string; priority: 'low' | 'medium' | 'high'; assignee: string; status: 'todo' | 'in_progress' | 'done' }) => void;
   onDelete: (taskId: string) => void;
 }
 
