@@ -31,10 +31,10 @@ export function TaskStatusPieChart({ tasks, projects }: Props) {
 
   const chartSection = (
     <div className="flex items-center gap-6">
-      <div className="w-56 h-56">
+      <div className="w-52 h-52">
         <ResponsiveContainer width="100%" height="100%">
           <PieChart>
-            <Pie data={data} cx="50%" cy="50%" innerRadius={50} outerRadius={90} paddingAngle={3} dataKey="value" strokeWidth={0}>
+            <Pie data={data} cx="50%" cy="50%" innerRadius={45} outerRadius={80} paddingAngle={3} dataKey="value" strokeWidth={0}>
               {data.map((entry, i) => <Cell key={i} fill={entry.color} />)}
             </Pie>
             <Tooltip contentStyle={{ background: 'hsl(var(--card))', border: '1px solid hsl(var(--border))', borderRadius: '8px', fontSize: '12px', color: 'hsl(var(--card-foreground))' }} />
