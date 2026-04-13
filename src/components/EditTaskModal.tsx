@@ -6,7 +6,7 @@ interface Props {
   open: boolean;
   task: TaskWithChangelog | null;
   onClose: () => void;
-  onUpdate: (taskId: string, updates: { title: string; description: string; priority: 'low' | 'medium' | 'high'; assignee: string }) => void;
+  onUpdate: (taskId: string, updates: { title: string; description: string; priority: 'low' | 'medium' | 'high'; assignee: string; status: 'todo' | 'in_progress' | 'done' }) => void;
   onDelete: (taskId: string) => void;
 }
 
@@ -14,6 +14,7 @@ export function EditTaskModal({ open, task, onClose, onUpdate, onDelete }: Props
   const [title, setTitle] = useState('');
   const [description, setDescription] = useState('');
   const [priority, setPriority] = useState<'low' | 'medium' | 'high'>('medium');
+  const [status, setStatus] = useState<'todo' | 'in_progress' | 'done'>('todo');
   const [assignee, setAssignee] = useState('');
   const [confirmDelete, setConfirmDelete] = useState(false);
 
@@ -22,6 +23,7 @@ export function EditTaskModal({ open, task, onClose, onUpdate, onDelete }: Props
       setTitle(task.title);
       setDescription(task.description || '');
       setPriority(task.priority);
+      setStatus(task.status);
       setAssignee(task.assignee || '');
       setConfirmDelete(false);
     }
@@ -32,7 +34,7 @@ export function EditTaskModal({ open, task, onClose, onUpdate, onDelete }: Props
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (!title.trim()) return;
-    onUpdate(task.id, { title: title.trim(), description: description.trim(), priority, assignee: assignee.trim() });
+    onUpdate(task.id, { title: title.trim(), description: description.trim(), priority, assignee: assignee.trim(), status });
     onClose();
   };
 
@@ -66,7 +68,15 @@ export function EditTaskModal({ open, task, onClose, onUpdate, onDelete }: Props
             <label className="text-sm font-medium text-card-foreground mb-1 block">Description</label>
             <textarea value={description} onChange={e => setDescription(e.target.value)} className="w-full px-3 py-2 rounded-lg border bg-background text-foreground text-sm focus:outline-none focus:ring-2 focus:ring-primary/30 resize-none" rows={3} />
           </div>
-          <div className="grid grid-cols-2 gap-4">
+          <div className="grid grid-cols-3 gap-4">
+            <div>
+              <label className="text-sm font-medium text-card-foreground mb-1 block">Status</label>
+              <select value={status} onChange={e => setStatus(e.target.value as any)} className="w-full px-3 py-2 rounded-lg border bg-background text-foreground text-sm focus:outline-none focus:ring-2 focus:ring-primary/30">
+                <option value="todo">Todo</option>
+                <option value="in_progress">In Progress</option>
+                <option value="done">Done</option>
+              </select>
+            </div>
             <div>
               <label className="text-sm font-medium text-card-foreground mb-1 block">Priority</label>
               <select value={priority} onChange={e => setPriority(e.target.value as any)} className="w-full px-3 py-2 rounded-lg border bg-background text-foreground text-sm focus:outline-none focus:ring-2 focus:ring-primary/30">

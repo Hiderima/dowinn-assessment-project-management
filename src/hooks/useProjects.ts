@@ -103,17 +103,18 @@ export function useProjects() {
     if (error) { toast.error('Failed to update times'); fetchTasks(selectedProjectId); }
   }, [selectedProjectId, fetchTasks]);
 
-  const updateTask = useCallback(async (taskId: string, updates: { title: string; description: string; priority: 'low' | 'medium' | 'high'; assignee: string }) => {
+  const updateTask = useCallback(async (taskId: string, updates: { title: string; description: string; priority: 'low' | 'medium' | 'high'; assignee: string; status: 'todo' | 'in_progress' | 'done' }) => {
     setTasks(prev => prev.map(t => t.id === taskId ? { ...t, ...updates, assignee: updates.assignee || null } : t));
     const { error } = await supabase.from('tasks').update({
       title: updates.title,
       description: updates.description,
       priority: updates.priority,
       assignee: updates.assignee || null,
+      status: updates.status,
     }).eq('id', taskId);
     if (error) { toast.error('Failed to update task'); fetchTasks(selectedProjectId); return; }
     toast.success('Task updated');
-    await supabase.from('task_changelog').insert({ task_id: taskId, message: 'Task details updated' });
+    await supabase.from('task_changelog').insert({ task_id: taskId, message: `Task updated — status: ${updates.status.replace('_', ' ')}` });
     fetchTasks(selectedProjectId);
   }, [selectedProjectId, fetchTasks]);
 
