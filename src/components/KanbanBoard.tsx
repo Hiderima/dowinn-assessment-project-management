@@ -39,7 +39,7 @@ export function KanbanBoard({ tasks, loading, onMoveTask, onEditTask }: Props) {
   return (
     <>
       <DragDropContext onDragEnd={onDragEnd}>
-        <div className="flex gap-5 overflow-x-auto p-6">
+        <div className="flex gap-5 p-6">
           {COLUMNS.map(col => (
             <KanbanColumn
               key={col.id}

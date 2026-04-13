@@ -76,11 +76,11 @@ export function useProjects() {
   useEffect(() => { if (selectedProjectId) fetchTasks(selectedProjectId); }, [selectedProjectId]);
 
   const moveTask = useCallback(async (taskId: string, newStatus: 'todo' | 'in_progress' | 'done') => {
+    // Optimistic update only — no background refetch to avoid remounting Draggables
     setTasks(prev => prev.map(t => t.id === taskId ? { ...t, status: newStatus } : t));
     const { error } = await supabase.from('tasks').update({ status: newStatus }).eq('id', taskId);
     if (error) { toast.error('Failed to update task'); fetchTasks(selectedProjectId, true); return; }
-    await supabase.from('task_changelog').insert({ task_id: taskId, message: `Status changed to ${newStatus.replace('_', ' ')}` });
-    fetchTasks(selectedProjectId, true);
+    supabase.from('task_changelog').insert({ task_id: taskId, message: `Status changed to ${newStatus.replace('_', ' ')}` }).then();
   }, [selectedProjectId, fetchTasks]);
 
   const updateTaskDates = useCallback(async (taskId: string, startDate: string, endDate: string) => {
