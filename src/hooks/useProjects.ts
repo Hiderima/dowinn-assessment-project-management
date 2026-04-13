@@ -92,7 +92,20 @@ export function useProjects() {
     }
   }, [fetchProjects]);
 
+  const addProject = useCallback((name: string, description: string) => {
+    const newProject: Project = {
+      id: `p-${Date.now()}`,
+      name,
+      description,
+      taskCount: 0,
+    };
+    setProjects(prev => [...prev, newProject]);
+    setSelectedProjectId(newProject.id);
+    setTasks([]);
+    toast.success('Project created');
+  }, []);
+
   const selectedProject = projects.find(p => p.id === selectedProjectId);
 
-  return { projects, selectedProject, selectedProjectId, setSelectedProjectId, tasks, loading, moveTask, seedDatabase, apiAvailable };
+  return { projects, selectedProject, selectedProjectId, setSelectedProjectId, tasks, loading, moveTask, seedDatabase, addProject, apiAvailable };
 }

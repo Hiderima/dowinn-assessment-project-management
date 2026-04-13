@@ -1,4 +1,4 @@
-import { FolderKanban, Settings, Database, ChevronRight } from 'lucide-react';
+import { FolderKanban, Settings, Database, ChevronRight, Plus } from 'lucide-react';
 import type { Project } from '@/types/project';
 import { cn } from '@/lib/utils';
 
@@ -7,10 +7,11 @@ interface Props {
   selectedId: string;
   onSelect: (id: string) => void;
   onSeed: () => void;
+  onAddProject: () => void;
   apiAvailable: boolean;
 }
 
-export function ProjectSidebar({ projects, selectedId, onSelect, onSeed, apiAvailable }: Props) {
+export function ProjectSidebar({ projects, selectedId, onSelect, onSeed, onAddProject, apiAvailable }: Props) {
   return (
     <aside className="w-64 flex-shrink-0 bg-sidebar text-sidebar-foreground flex flex-col h-screen border-r border-sidebar-border">
       <div className="p-5 border-b border-sidebar-border">
@@ -23,7 +24,12 @@ export function ProjectSidebar({ projects, selectedId, onSelect, onSeed, apiAvai
       </div>
 
       <div className="flex-1 overflow-y-auto py-4">
-        <p className="px-5 text-xs font-medium uppercase tracking-wider text-sidebar-foreground/50 mb-2">Projects</p>
+        <div className="px-5 flex items-center justify-between mb-2">
+          <p className="text-xs font-medium uppercase tracking-wider text-sidebar-foreground/50">Projects</p>
+          <button onClick={onAddProject} className="text-sidebar-foreground/50 hover:text-sidebar-primary transition-colors" title="Add project">
+            <Plus className="w-3.5 h-3.5" />
+          </button>
+        </div>
         <nav className="space-y-0.5 px-2">
           {projects.map(p => (
             <button
