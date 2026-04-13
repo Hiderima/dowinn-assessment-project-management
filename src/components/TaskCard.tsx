@@ -25,7 +25,7 @@ export function TaskCard({ task, index, onOpenLog, onEdit }: Props) {
           {...provided.draggableProps}
           {...provided.dragHandleProps}
           className={cn(
-            'bg-card rounded-lg border p-3.5 shadow-sm transition-shadow cursor-grab active:cursor-grabbing',
+            'bg-card rounded-lg border p-3.5 shadow-sm transition-all duration-200 cursor-grab active:cursor-grabbing animate-task-enter',
             snapshot.isDragging && 'shadow-lg ring-2 ring-primary/20'
           )}
         >
