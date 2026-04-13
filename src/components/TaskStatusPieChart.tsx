@@ -29,60 +29,69 @@ export function TaskStatusPieChart({ tasks, projects }: Props) {
     };
   }).filter(p => p.total > 0);
 
-  return (
-    <div className="space-y-5">
-      <div className="flex items-center gap-4">
-        <div className="w-40 h-40">
-          <ResponsiveContainer width="100%" height="100%">
-            <PieChart>
-              <Pie data={data} cx="50%" cy="50%" innerRadius={35} outerRadius={65} paddingAngle={3} dataKey="value" strokeWidth={0}>
-                {data.map((entry, i) => <Cell key={i} fill={entry.color} />)}
-              </Pie>
-              <Tooltip contentStyle={{ background: 'hsl(var(--card))', border: '1px solid hsl(var(--border))', borderRadius: '8px', fontSize: '12px', color: 'hsl(var(--card-foreground))' }} />
-            </PieChart>
-          </ResponsiveContainer>
-        </div>
-        <div className="space-y-2">
-          {data.map(d => (
-            <div key={d.name} className="flex items-center gap-2 text-xs">
-              <span className="w-3 h-3 rounded-sm" style={{ background: d.color }} />
-              <span className="text-muted-foreground">{d.name}</span>
-              <span className="font-semibold text-card-foreground ml-auto">{d.value}</span>
-            </div>
-          ))}
-          <div className="pt-1 border-t text-xs text-muted-foreground">Total: <span className="font-semibold text-card-foreground">{tasks.length}</span></div>
-        </div>
+  const chartSection = (
+    <div className="flex items-center gap-4">
+      <div className="w-40 h-40">
+        <ResponsiveContainer width="100%" height="100%">
+          <PieChart>
+            <Pie data={data} cx="50%" cy="50%" innerRadius={35} outerRadius={65} paddingAngle={3} dataKey="value" strokeWidth={0}>
+              {data.map((entry, i) => <Cell key={i} fill={entry.color} />)}
+            </Pie>
+            <Tooltip contentStyle={{ background: 'hsl(var(--card))', border: '1px solid hsl(var(--border))', borderRadius: '8px', fontSize: '12px', color: 'hsl(var(--card-foreground))' }} />
+          </PieChart>
+        </ResponsiveContainer>
       </div>
-
-      {projectBreakdown && projectBreakdown.length > 0 && (
-        <div>
-          <h3 className="text-xs font-semibold text-card-foreground mb-2 uppercase tracking-wider">Per Project Breakdown</h3>
-          <div className="rounded-lg border overflow-hidden">
-            <table className="w-full text-xs">
-              <thead>
-                <tr className="bg-muted/50">
-                  <th className="text-left px-3 py-2 font-medium text-muted-foreground">Project</th>
-                  <th className="text-center px-3 py-2 font-medium" style={{ color: STATUS_CONFIG[0].color }}>Todo</th>
-                  <th className="text-center px-3 py-2 font-medium" style={{ color: STATUS_CONFIG[1].color }}>In Progress</th>
-                  <th className="text-center px-3 py-2 font-medium" style={{ color: STATUS_CONFIG[2].color }}>Done</th>
-                  <th className="text-center px-3 py-2 font-medium text-muted-foreground">Total</th>
-                </tr>
-              </thead>
-              <tbody>
-                {projectBreakdown.map(p => (
-                  <tr key={p.name} className="border-t">
-                    <td className="px-3 py-2 font-medium text-card-foreground">{p.name}</td>
-                    <td className="text-center px-3 py-2 text-muted-foreground">{p.todo || '—'}</td>
-                    <td className="text-center px-3 py-2 text-muted-foreground">{p.inProgress || '—'}</td>
-                    <td className="text-center px-3 py-2 text-muted-foreground">{p.done || '—'}</td>
-                    <td className="text-center px-3 py-2 font-semibold text-card-foreground">{p.total}</td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
+      <div className="space-y-2">
+        {data.map(d => (
+          <div key={d.name} className="flex items-center gap-2 text-xs">
+            <span className="w-3 h-3 rounded-sm" style={{ background: d.color }} />
+            <span className="text-muted-foreground">{d.name}</span>
+            <span className="font-semibold text-card-foreground ml-auto">{d.value}</span>
           </div>
-        </div>
-      )}
+        ))}
+        <div className="pt-1 border-t text-xs text-muted-foreground">Total: <span className="font-semibold text-card-foreground">{tasks.length}</span></div>
+      </div>
     </div>
   );
+
+  const breakdownSection = projectBreakdown && projectBreakdown.length > 0 ? (
+    <div className="flex-1 min-w-0">
+      <h3 className="text-xs font-semibold text-card-foreground mb-2 uppercase tracking-wider">Per Project Breakdown</h3>
+      <div className="rounded-lg border overflow-auto" style={{ maxHeight: '180px' }}>
+        <table className="w-full text-xs">
+          <thead className="sticky top-0 z-10">
+            <tr className="bg-muted/80 backdrop-blur">
+              <th className="text-left px-3 py-2 font-medium text-muted-foreground">Project</th>
+              <th className="text-center px-3 py-2 font-medium" style={{ color: STATUS_CONFIG[0].color }}>Todo</th>
+              <th className="text-center px-3 py-2 font-medium" style={{ color: STATUS_CONFIG[1].color }}>In Prog.</th>
+              <th className="text-center px-3 py-2 font-medium" style={{ color: STATUS_CONFIG[2].color }}>Done</th>
+              <th className="text-center px-3 py-2 font-medium text-muted-foreground">Total</th>
+            </tr>
+          </thead>
+          <tbody>
+            {projectBreakdown.map(p => (
+              <tr key={p.name} className="border-t">
+                <td className="px-3 py-2 font-medium text-card-foreground truncate max-w-[120px]">{p.name}</td>
+                <td className="text-center px-3 py-2 text-muted-foreground">{p.todo || '—'}</td>
+                <td className="text-center px-3 py-2 text-muted-foreground">{p.inProgress || '—'}</td>
+                <td className="text-center px-3 py-2 text-muted-foreground">{p.done || '—'}</td>
+                <td className="text-center px-3 py-2 font-semibold text-card-foreground">{p.total}</td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  ) : null;
+
+  if (projects && breakdownSection) {
+    return (
+      <div className="flex flex-col lg:flex-row gap-5 items-start">
+        <div className="shrink-0">{chartSection}</div>
+        {breakdownSection}
+      </div>
+    );
+  }
+
+  return chartSection;
 }
