@@ -63,11 +63,13 @@ export function useProjects() {
 
     if (error) { toast.error('Failed to load tasks'); setLoading(false); return; }
 
+    const priorityOrder = { high: 0, medium: 1, low: 2 };
     const mapped: TaskWithChangelog[] = (data || []).map((t: any) => ({
       ...t,
       changelog: (t.task_changelog || []).sort((a: any, b: any) => new Date(a.created_at).getTime() - new Date(b.created_at).getTime()),
     }));
     mapped.forEach((t: any) => delete t.task_changelog);
+    mapped.sort((a, b) => priorityOrder[a.priority] - priorityOrder[b.priority]);
     setTasks(mapped);
     setLoading(false);
   }, []);
