@@ -1,7 +1,7 @@
 import { Draggable } from '@hello-pangea/dnd';
 import { Clock, MessageSquare, User } from 'lucide-react';
-import type { Task } from '@/types/project';
 import { cn } from '@/lib/utils';
+import type { TaskWithChangelog } from '@/hooks/useProjects';
 
 const priorityStyles: Record<string, string> = {
   high: 'bg-destructive/10 text-destructive',
@@ -10,9 +10,9 @@ const priorityStyles: Record<string, string> = {
 };
 
 interface Props {
-  task: Task;
+  task: TaskWithChangelog;
   index: number;
-  onOpenLog: (task: Task) => void;
+  onOpenLog: (task: TaskWithChangelog) => void;
 }
 
 export function TaskCard({ task, index, onOpenLog }: Props) {
@@ -43,7 +43,7 @@ export function TaskCard({ task, index, onOpenLog }: Props) {
                 </span>
               )}
               <span className="flex items-center gap-1 text-xs">
-                <Clock className="w-3 h-3" /> {new Date(task.createdAt).toLocaleDateString()}
+                <Clock className="w-3 h-3" /> {new Date(task.created_at).toLocaleDateString()}
               </span>
             </div>
             <button

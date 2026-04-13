@@ -1,26 +1,20 @@
 import { useState } from 'react';
-import { LayoutDashboard, BarChart3, Table2, PieChart as PieIcon } from 'lucide-react';
+import { LayoutDashboard, BarChart3, Table2, PieChart as PieIcon, Plus, LogOut } from 'lucide-react';
 import { ProjectSidebar } from '@/components/ProjectSidebar';
 import { KanbanBoard } from '@/components/KanbanBoard';
 import { AddProjectModal } from '@/components/AddProjectModal';
+import { AddTaskModal } from '@/components/AddTaskModal';
 import { ProjectProgressBar } from '@/components/ProjectProgressBar';
 import { TaskStatusPieChart } from '@/components/TaskStatusPieChart';
 import { Timesheet } from '@/components/Timesheet';
 import { useProjects } from '@/hooks/useProjects';
-import { cn } from '@/lib/utils';
-
-type Tab = 'board' | 'timesheet' | 'analytics';
-
-const tabs: { id: Tab; label: string; icon: React.ElementType }[] = [
-  { id: 'board', label: 'Board', icon: LayoutDashboard },
-  { id: 'timesheet', label: 'Timesheet', icon: Table2 },
-  { id: 'analytics', label: 'Analytics', icon: BarChart3 },
-];
+import { useAuth } from '@/contexts/AuthContext';
 
 const Index = () => {
-  const { projects, selectedProject, selectedProjectId, setSelectedProjectId, tasks, loading, moveTask, seedDatabase, addProject, apiAvailable } = useProjects();
+  const { user, signOut } = useAuth();
+  const { projects, selectedProject, selectedProjectId, setSelectedProjectId, tasks, loading, moveTask, addProject, addTask, seedDatabase } = useProjects();
   const [showAddProject, setShowAddProject] = useState(false);
-  const [activeTab, setActiveTab] = useState<Tab>('board');
+  const [showAddTask, setShowAddTask] = useState(false);
 
   return (
     <div className="flex h-screen overflow-hidden">
@@ -30,7 +24,7 @@ const Index = () => {
         onSelect={setSelectedProjectId}
         onSeed={seedDatabase}
         onAddProject={() => setShowAddProject(true)}
-        apiAvailable={apiAvailable}
+        apiAvailable={true}
       />
 
       <div className="flex-1 flex flex-col overflow-hidden">
@@ -42,54 +36,44 @@ const Index = () => {
               {selectedProject && <p className="text-xs text-muted-foreground">{selectedProject.description}</p>}
             </div>
           </div>
-          <div className="flex items-center gap-1">
-            {tabs.map(tab => (
+          <div className="flex items-center gap-2">
+            {selectedProject && (
               <button
-                key={tab.id}
-                onClick={() => setActiveTab(tab.id)}
-                className={cn(
-                  'flex items-center gap-1.5 px-3 py-1.5 rounded-md text-xs font-medium transition-colors',
-                  activeTab === tab.id
-                    ? 'bg-primary text-primary-foreground'
-                    : 'text-muted-foreground hover:bg-muted hover:text-foreground'
-                )}
+                onClick={() => setShowAddTask(true)}
+                className="flex items-center gap-1.5 px-3 py-1.5 rounded-md text-xs font-medium bg-primary text-primary-foreground hover:bg-primary/90 transition-colors"
               >
-                <tab.icon className="w-3.5 h-3.5" />
-                {tab.label}
+                <Plus className="w-3.5 h-3.5" />
+                Add Task
               </button>
-            ))}
-            {!apiAvailable && (
-              <span className="ml-3 text-xs bg-accent text-accent-foreground px-2.5 py-1 rounded-full font-medium">
-                Demo Mode
-              </span>
             )}
+            <span className="text-xs text-muted-foreground">{user?.email}</span>
+            <button onClick={signOut} className="p-1.5 rounded-md text-muted-foreground hover:bg-muted hover:text-foreground transition-colors" title="Sign out">
+              <LogOut className="w-4 h-4" />
+            </button>
           </div>
         </header>
 
-        {activeTab === 'board' && (
-          <div className="flex-1 flex flex-col overflow-hidden">
+        <div className="flex-1 overflow-auto">
+          {/* Progress Bar */}
+          {tasks.length > 0 && (
             <div className="px-6 pt-4">
               <ProjectProgressBar tasks={tasks} />
             </div>
-            <KanbanBoard tasks={tasks} loading={loading} onMoveTask={moveTask} />
-          </div>
-        )}
+          )}
 
-        {activeTab === 'timesheet' && (
-          <div className="flex-1 overflow-auto p-6">
-            <div className="bg-card rounded-xl border p-5">
-              <h2 className="text-sm font-semibold text-card-foreground mb-4 flex items-center gap-2">
-                <Table2 className="w-4 h-4 text-primary" />
-                Timesheet — {selectedProject?.name}
-              </h2>
-              <Timesheet tasks={tasks} />
-            </div>
-          </div>
-        )}
+          {/* Kanban Board */}
+          <KanbanBoard tasks={tasks} loading={loading} onMoveTask={moveTask} />
 
-        {activeTab === 'analytics' && (
-          <div className="flex-1 overflow-auto p-6">
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-5">
+          {/* Timesheet & Pie Chart side by side */}
+          {tasks.length > 0 && (
+            <div className="px-6 pb-6 grid grid-cols-1 lg:grid-cols-2 gap-5">
+              <div className="bg-card rounded-xl border p-5">
+                <h2 className="text-sm font-semibold text-card-foreground mb-4 flex items-center gap-2">
+                  <Table2 className="w-4 h-4 text-primary" />
+                  Timesheet
+                </h2>
+                <Timesheet tasks={tasks} />
+              </div>
               <div className="bg-card rounded-xl border p-5">
                 <h2 className="text-sm font-semibold text-card-foreground mb-4 flex items-center gap-2">
                   <PieIcon className="w-4 h-4 text-primary" />
@@ -97,35 +81,13 @@ const Index = () => {
                 </h2>
                 <TaskStatusPieChart tasks={tasks} />
               </div>
-              <div className="bg-card rounded-xl border p-5">
-                <h2 className="text-sm font-semibold text-card-foreground mb-4 flex items-center gap-2">
-                  <BarChart3 className="w-4 h-4 text-primary" />
-                  Overall Progress
-                </h2>
-                <ProjectProgressBar tasks={tasks} />
-                <div className="mt-6 grid grid-cols-3 gap-3">
-                  {[
-                    { label: 'Todo', count: tasks.filter(t => t.status === 'todo').length, color: 'hsl(var(--column-todo))' },
-                    { label: 'In Progress', count: tasks.filter(t => t.status === 'in_progress').length, color: 'hsl(var(--column-progress))' },
-                    { label: 'Done', count: tasks.filter(t => t.status === 'done').length, color: 'hsl(var(--column-done))' },
-                  ].map(s => (
-                    <div key={s.label} className="bg-muted/50 rounded-lg p-3 text-center">
-                      <p className="text-2xl font-bold text-card-foreground">{s.count}</p>
-                      <p className="text-[11px] text-muted-foreground mt-0.5">{s.label}</p>
-                    </div>
-                  ))}
-                </div>
-              </div>
             </div>
-          </div>
-        )}
+          )}
+        </div>
       </div>
 
-      <AddProjectModal
-        open={showAddProject}
-        onClose={() => setShowAddProject(false)}
-        onAdd={addProject}
-      />
+      <AddProjectModal open={showAddProject} onClose={() => setShowAddProject(false)} onAdd={addProject} />
+      <AddTaskModal open={showAddTask} onClose={() => setShowAddTask(false)} onAdd={addTask} />
     </div>
   );
 };
