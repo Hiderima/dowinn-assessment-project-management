@@ -32,12 +32,15 @@ const Index = () => {
           <div className="flex items-center gap-3">
             <LayoutDashboard className="w-5 h-5 text-primary" />
             <div>
-              <h1 className="text-sm font-semibold text-card-foreground">{selectedProject?.name || 'Select a project'}</h1>
-              {selectedProject && <p className="text-xs text-muted-foreground">{selectedProject.description}</p>}
+              <h1 className="text-sm font-semibold text-card-foreground">
+                {selectedProjectId === 'all' ? 'All Projects' : selectedProject?.name || 'Select a project'}
+              </h1>
+              {selectedProjectId !== 'all' && selectedProject && <p className="text-xs text-muted-foreground">{selectedProject.description}</p>}
+              {selectedProjectId === 'all' && <p className="text-xs text-muted-foreground">Overview of all projects</p>}
             </div>
           </div>
           <div className="flex items-center gap-2">
-            {selectedProject && (
+            {selectedProject && selectedProjectId !== 'all' && (
               <button
                 onClick={() => setShowAddTask(true)}
                 className="flex items-center gap-1.5 px-3 py-1.5 rounded-md text-xs font-medium bg-primary text-primary-foreground hover:bg-primary/90 transition-colors"
@@ -54,18 +57,50 @@ const Index = () => {
         </header>
 
         <div className="flex-1 overflow-auto">
-          {/* Progress Bar */}
-          {tasks.length > 0 && (
+          {/* Progress Bar - only for individual projects */}
+          {selectedProjectId !== 'all' && tasks.length > 0 && (
             <div className="px-6 pt-4">
               <ProjectProgressBar tasks={tasks} />
             </div>
           )}
 
-          {/* Kanban Board */}
-          <KanbanBoard tasks={tasks} loading={loading} onMoveTask={moveTask} />
+          {/* Kanban Board - only for individual projects */}
+          {selectedProjectId !== 'all' && (
+            <KanbanBoard tasks={tasks} loading={loading} onMoveTask={moveTask} />
+          )}
 
-          {/* Timesheet & Pie Chart side by side */}
-          {tasks.length > 0 && (
+          {/* All Projects view: Pie Chart + Timesheet */}
+          {selectedProjectId === 'all' && (
+            <div className="px-6 py-6 space-y-5">
+              {loading ? (
+                <div className="flex items-center justify-center py-12">
+                  <div className="w-6 h-6 border-2 border-primary border-t-transparent rounded-full animate-spin" />
+                </div>
+              ) : tasks.length > 0 ? (
+                <>
+                  <div className="bg-card rounded-xl border p-5">
+                    <h2 className="text-sm font-semibold text-card-foreground mb-4 flex items-center gap-2">
+                      <PieIcon className="w-4 h-4 text-primary" />
+                      Overall Task Distribution
+                    </h2>
+                    <TaskStatusPieChart tasks={tasks} />
+                  </div>
+                  <div className="bg-card rounded-xl border p-5">
+                    <h2 className="text-sm font-semibold text-card-foreground mb-4 flex items-center gap-2">
+                      <Table2 className="w-4 h-4 text-primary" />
+                      Timesheet — All Projects
+                    </h2>
+                    <Timesheet tasks={tasks} />
+                  </div>
+                </>
+              ) : (
+                <div className="flex items-center justify-center py-12 text-sm text-muted-foreground">No tasks across any project</div>
+              )}
+            </div>
+          )}
+
+          {/* Per-project Timesheet & Pie Chart */}
+          {selectedProjectId !== 'all' && tasks.length > 0 && (
             <div className="px-6 pb-6 grid grid-cols-1 lg:grid-cols-2 gap-5">
               <div className="bg-card rounded-xl border p-5">
                 <h2 className="text-sm font-semibold text-card-foreground mb-4 flex items-center gap-2">

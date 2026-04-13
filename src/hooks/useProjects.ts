@@ -41,19 +41,25 @@ export function useProjects() {
     mapped.forEach((p: any) => delete p.tasks);
 
     setProjects(mapped);
-    if (mapped.length > 0 && !mapped.find(p => p.id === selectedProjectId)) {
-      setSelectedProjectId(mapped[0].id);
+    if (!selectedProjectId || (selectedProjectId !== 'all' && mapped.length > 0 && !mapped.find(p => p.id === selectedProjectId))) {
+      setSelectedProjectId('all');
     }
   }, [user, selectedProjectId]);
 
   const fetchTasks = useCallback(async (projectId: string) => {
     if (!projectId) { setTasks([]); return; }
     setLoading(true);
-    const { data, error } = await supabase
+
+    let query = supabase
       .from('tasks')
       .select('*, task_changelog(*)')
-      .eq('project_id', projectId)
       .order('created_at', { ascending: true });
+
+    if (projectId !== 'all') {
+      query = query.eq('project_id', projectId);
+    }
+
+    const { data, error } = await query;
 
     if (error) { toast.error('Failed to load tasks'); setLoading(false); return; }
 
