@@ -137,6 +137,7 @@ const Index = () => {
         onClose={() => setEditingTask(null)}
         onUpdate={updateTask}
         onDelete={deleteTask}
+        onStatusChange={moveTask}
       />
     </div>
   );
