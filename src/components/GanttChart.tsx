@@ -9,6 +9,7 @@ import type { TaskWithChangelog } from '@/hooks/useProjects';
 interface Props {
   tasks: TaskWithChangelog[];
   onUpdateDates: (taskId: string, startDate: string, endDate: string) => void;
+  onUpdateTimes?: (taskId: string, startTime: string, endTime: string) => void;
 }
 
 const statusColor: Record<string, string> = {
@@ -17,7 +18,7 @@ const statusColor: Record<string, string> = {
   done: 'hsl(145, 63%, 42%)',
 };
 
-export function GanttChart({ tasks, onUpdateDates }: Props) {
+export function GanttChart({ tasks, onUpdateDates, onUpdateTimes }: Props) {
   const containerRef = useRef<HTMLDivElement>(null);
   const [viewOffset, setViewOffset] = useState(0); // days offset for navigation
 
@@ -113,6 +114,7 @@ export function GanttChart({ tasks, onUpdateDates }: Props) {
                 totalDays={totalDays}
                 dayWidth={dayWidth}
                 onUpdateDates={onUpdateDates}
+                onUpdateTimes={onUpdateTimes}
               />
             ))
           )}
@@ -128,9 +130,10 @@ interface RowProps {
   totalDays: number;
   dayWidth: number;
   onUpdateDates: (taskId: string, startDate: string, endDate: string) => void;
+  onUpdateTimes?: (taskId: string, startTime: string, endTime: string) => void;
 }
 
-function GanttRow({ task, timelineStart, totalDays, dayWidth, onUpdateDates }: RowProps) {
+function GanttRow({ task, timelineStart, totalDays, dayWidth, onUpdateDates, onUpdateTimes }: RowProps) {
   const taskStart = task.start_date ? parseISO(task.start_date) : new Date(task.created_at);
   const taskEnd = task.end_date ? parseISO(task.end_date) : addDays(taskStart, 3);
 
@@ -179,7 +182,7 @@ function GanttRow({ task, timelineStart, totalDays, dayWidth, onUpdateDates }: R
 
   return (
     <div className="flex items-center border-b border-border/20 hover:bg-muted/20 transition-colors group">
-      {/* Task name + date pickers */}
+      {/* Task name + date/time pickers */}
       <div className="w-[200px] flex-shrink-0 px-3 py-2 space-y-0.5">
         <div className="text-xs font-medium text-card-foreground truncate">{task.title}</div>
         <div className="flex items-center gap-1">
@@ -193,6 +196,25 @@ function GanttRow({ task, timelineStart, totalDays, dayWidth, onUpdateDates }: R
             onChange={(d) => onUpdateDates(task.id, format(taskStart, 'yyyy-MM-dd'), format(d, 'yyyy-MM-dd'))}
           />
         </div>
+        {onUpdateTimes && (
+          <div className="flex items-center gap-1">
+            <input
+              type="time"
+              value={(task as any).start_time || ''}
+              onChange={(e) => onUpdateTimes(task.id, e.target.value, (task as any).end_time || '')}
+              className="text-[9px] text-muted-foreground bg-transparent border-none outline-none cursor-pointer w-[58px]"
+              title="Start time"
+            />
+            <span className="text-[9px] text-muted-foreground">→</span>
+            <input
+              type="time"
+              value={(task as any).end_time || ''}
+              onChange={(e) => onUpdateTimes(task.id, (task as any).start_time || '', e.target.value)}
+              className="text-[9px] text-muted-foreground bg-transparent border-none outline-none cursor-pointer w-[58px]"
+              title="End time"
+            />
+          </div>
+        )}
       </div>
 
       {/* Gantt bar area */}
