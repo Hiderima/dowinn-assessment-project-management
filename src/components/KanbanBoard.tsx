@@ -1,22 +1,27 @@
 import { useState } from 'react';
 import { DragDropContext, type DropResult } from '@hello-pangea/dnd';
-import type { Task, TaskStatus } from '@/types/project';
-import { COLUMNS } from '@/types/project';
 import { KanbanColumn } from './KanbanColumn';
 import { ChangeLogModal } from './ChangeLogModal';
+import type { TaskWithChangelog } from '@/hooks/useProjects';
+
+const COLUMNS = [
+  { id: 'todo' as const, title: 'Todo', colorVar: 'var(--column-todo)' },
+  { id: 'in_progress' as const, title: 'In Progress', colorVar: 'var(--column-progress)' },
+  { id: 'done' as const, title: 'Done', colorVar: 'var(--column-done)' },
+];
 
 interface Props {
-  tasks: Task[];
+  tasks: TaskWithChangelog[];
   loading: boolean;
-  onMoveTask: (taskId: string, newStatus: TaskStatus) => void;
+  onMoveTask: (taskId: string, newStatus: 'todo' | 'in_progress' | 'done') => void;
 }
 
 export function KanbanBoard({ tasks, loading, onMoveTask }: Props) {
-  const [logTask, setLogTask] = useState<Task | null>(null);
+  const [logTask, setLogTask] = useState<TaskWithChangelog | null>(null);
 
   const onDragEnd = (result: DropResult) => {
     if (!result.destination) return;
-    const newStatus = result.destination.droppableId as TaskStatus;
+    const newStatus = result.destination.droppableId as 'todo' | 'in_progress' | 'done';
     if (newStatus !== result.source.droppableId) {
       onMoveTask(result.draggableId, newStatus);
     }
@@ -24,7 +29,7 @@ export function KanbanBoard({ tasks, loading, onMoveTask }: Props) {
 
   if (loading) {
     return (
-      <div className="flex-1 flex items-center justify-center">
+      <div className="flex items-center justify-center py-12">
         <div className="w-6 h-6 border-2 border-primary border-t-transparent rounded-full animate-spin" />
       </div>
     );
@@ -33,7 +38,7 @@ export function KanbanBoard({ tasks, loading, onMoveTask }: Props) {
   return (
     <>
       <DragDropContext onDragEnd={onDragEnd}>
-        <div className="flex gap-5 flex-1 overflow-x-auto p-6">
+        <div className="flex gap-5 overflow-x-auto p-6">
           {COLUMNS.map(col => (
             <KanbanColumn
               key={col.id}
