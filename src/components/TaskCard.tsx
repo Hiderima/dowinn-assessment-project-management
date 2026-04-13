@@ -1,3 +1,4 @@
+import type { CSSProperties } from 'react';
 import { Draggable } from '@hello-pangea/dnd';
 import { Clock, MessageSquare, User, Pencil } from 'lucide-react';
 import { cn } from '@/lib/utils';
@@ -7,6 +8,16 @@ const priorityStyles: Record<string, string> = {
   high: 'bg-destructive/10 text-destructive',
   medium: 'bg-accent text-accent-foreground',
   low: 'bg-muted text-muted-foreground',
+};
+
+const getTaskCardStyle = (style: CSSProperties | undefined, isDragging: boolean): CSSProperties => {
+  if (!style || !isDragging) return style ?? {};
+
+  return {
+    ...style,
+    transform: style.transform ? `${style.transform} rotate(1deg) scale(1.02)` : undefined,
+    zIndex: 30,
+  };
 };
 
 interface Props {
@@ -24,9 +35,10 @@ export function TaskCard({ task, index, onOpenLog, onEdit }: Props) {
           ref={provided.innerRef}
           {...provided.draggableProps}
           {...provided.dragHandleProps}
+          style={getTaskCardStyle(provided.draggableProps.style, snapshot.isDragging)}
           className={cn(
-            'bg-card rounded-lg border p-3.5 shadow-sm transition-all duration-200 cursor-grab active:cursor-grabbing animate-task-enter',
-            snapshot.isDragging && 'shadow-lg ring-2 ring-primary/20'
+            'bg-card rounded-lg border p-3.5 shadow-sm cursor-grab active:cursor-grabbing animate-task-enter select-none will-change-transform transition-[box-shadow,background-color,border-color,opacity] duration-150 ease-out motion-reduce:transition-none',
+            snapshot.isDragging ? 'shadow-2xl ring-2 ring-primary/25 opacity-95' : 'hover:shadow-md'
           )}
         >
           <div className="flex items-start justify-between gap-2 mb-2">
