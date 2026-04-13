@@ -57,7 +57,7 @@ export function TaskStatusPieChart({ tasks, projects }: Props) {
   const breakdownSection = projectBreakdown && projectBreakdown.length > 0 ? (
     <div className="flex-1 min-w-0">
       <h3 className="text-xs font-semibold text-card-foreground mb-2 uppercase tracking-wider">Per Project Breakdown</h3>
-      <div className="rounded-lg border overflow-auto" style={{ maxHeight: '180px' }}>
+      <div className="rounded-lg border overflow-auto" style={{ maxHeight: '240px' }}>
         <table className="w-full text-xs">
           <thead className="sticky top-0 z-10">
             <tr className="bg-muted/80 backdrop-blur">
