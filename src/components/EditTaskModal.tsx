@@ -14,6 +14,7 @@ export function EditTaskModal({ open, task, onClose, onUpdate, onDelete }: Props
   const [title, setTitle] = useState('');
   const [description, setDescription] = useState('');
   const [priority, setPriority] = useState<'low' | 'medium' | 'high'>('medium');
+  const [status, setStatus] = useState<'todo' | 'in_progress' | 'done'>('todo');
   const [assignee, setAssignee] = useState('');
   const [confirmDelete, setConfirmDelete] = useState(false);
 
