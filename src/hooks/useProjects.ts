@@ -46,9 +46,9 @@ export function useProjects() {
     }
   }, [user, selectedProjectId]);
 
-  const fetchTasks = useCallback(async (projectId: string) => {
+  const fetchTasks = useCallback(async (projectId: string, isBackground = false) => {
     if (!projectId) { setTasks([]); return; }
-    setLoading(true);
+    if (!isBackground) setLoading(true);
 
     let query = supabase
       .from('tasks')
@@ -61,7 +61,7 @@ export function useProjects() {
 
     const { data, error } = await query;
 
-    if (error) { toast.error('Failed to load tasks'); setLoading(false); return; }
+    if (error) { toast.error('Failed to load tasks'); if (!isBackground) setLoading(false); return; }
 
     const mapped: TaskWithChangelog[] = (data || []).map((t: any) => ({
       ...t,
