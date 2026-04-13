@@ -92,10 +92,15 @@ export function useProjects() {
   }, [selectedProjectId, fetchTasks]);
 
   const updateTaskDates = useCallback(async (taskId: string, startDate: string, endDate: string) => {
-    // Optimistic update
     setTasks(prev => prev.map(t => t.id === taskId ? { ...t, start_date: startDate, end_date: endDate } : t));
     const { error } = await supabase.from('tasks').update({ start_date: startDate, end_date: endDate } as any).eq('id', taskId);
     if (error) { toast.error('Failed to update dates'); fetchTasks(selectedProjectId); }
+  }, [selectedProjectId, fetchTasks]);
+
+  const updateTaskTimes = useCallback(async (taskId: string, startTime: string, endTime: string) => {
+    setTasks(prev => prev.map(t => t.id === taskId ? { ...t, start_time: startTime, end_time: endTime } as any : t));
+    const { error } = await supabase.from('tasks').update({ start_time: startTime, end_time: endTime } as any).eq('id', taskId);
+    if (error) { toast.error('Failed to update times'); fetchTasks(selectedProjectId); }
   }, [selectedProjectId, fetchTasks]);
 
   const addProject = useCallback(async (name: string, description: string) => {
@@ -160,5 +165,5 @@ export function useProjects() {
 
   const selectedProject = projects.find(p => p.id === selectedProjectId);
 
-  return { projects, selectedProject, selectedProjectId, setSelectedProjectId, tasks, loading, moveTask, addProject, updateProject, addTask, updateTaskDates, seedDatabase };
+  return { projects, selectedProject, selectedProjectId, setSelectedProjectId, tasks, loading, moveTask, addProject, updateProject, addTask, updateTaskDates, updateTaskTimes, seedDatabase };
 }

@@ -13,7 +13,7 @@ import { useAuth } from '@/contexts/AuthContext';
 
 const Index = () => {
   const { user, signOut } = useAuth();
-  const { projects, selectedProject, selectedProjectId, setSelectedProjectId, tasks, loading, moveTask, addProject, addTask, updateTaskDates, seedDatabase } = useProjects();
+  const { projects, selectedProject, selectedProjectId, setSelectedProjectId, tasks, loading, moveTask, addProject, addTask, updateTaskDates, updateTaskTimes, seedDatabase } = useProjects();
   const [showAddProject, setShowAddProject] = useState(false);
   const [showAddTask, setShowAddTask] = useState(false);
 
@@ -58,23 +58,28 @@ const Index = () => {
         </header>
 
         <div className="flex-1 overflow-auto">
-          {/* Pie Chart (left) + Progress Bar (right) for individual projects */}
-          {selectedProjectId !== 'all' && tasks.length > 0 && (
-            <div className="px-6 pt-4 grid grid-cols-1 lg:grid-cols-[1fr_auto] gap-5 items-start">
-              <ProjectProgressBar tasks={tasks} />
-              <div className="bg-card rounded-xl border p-4">
-                <h2 className="text-xs font-semibold text-card-foreground mb-3 flex items-center gap-1.5">
-                  <PieIcon className="w-3.5 h-3.5 text-primary" />
-                  Task Distribution
-                </h2>
-                <TaskStatusPieChart tasks={tasks} />
+          {/* Individual project view: Left side (Progress + Kanban) | Right side (Task Distribution) */}
+          {selectedProjectId !== 'all' && (
+            <div className="px-6 pt-4 pb-2">
+              <div className="grid grid-cols-1 lg:grid-cols-[1fr_auto] gap-5 items-start">
+                {/* Left column: Progress + Kanban */}
+                <div className="space-y-4">
+                  {tasks.length > 0 && <ProjectProgressBar tasks={tasks} />}
+                  <KanbanBoard tasks={tasks} loading={loading} onMoveTask={moveTask} />
+                </div>
+
+                {/* Right column: Task Distribution */}
+                {tasks.length > 0 && (
+                  <div className="bg-card rounded-xl border p-4 lg:w-[280px]">
+                    <h2 className="text-xs font-semibold text-card-foreground mb-3 flex items-center gap-1.5">
+                      <PieIcon className="w-3.5 h-3.5 text-primary" />
+                      Task Distribution
+                    </h2>
+                    <TaskStatusPieChart tasks={tasks} />
+                  </div>
+                )}
               </div>
             </div>
-          )}
-
-          {/* Kanban Board - only for individual projects */}
-          {selectedProjectId !== 'all' && (
-            <KanbanBoard tasks={tasks} loading={loading} onMoveTask={moveTask} />
           )}
 
           {/* Per-project Timesheet + Gantt */}
@@ -86,16 +91,16 @@ const Index = () => {
                   Timesheet & Gantt Chart
                 </h2>
                 <div className="grid grid-cols-1 xl:grid-cols-[minmax(0,1fr)_minmax(0,1.5fr)] gap-5">
-                  <Timesheet tasks={tasks} onUpdateDates={updateTaskDates} />
+                  <Timesheet tasks={tasks} onUpdateDates={updateTaskDates} onUpdateTimes={updateTaskTimes} />
                   <div className="border-l pl-5">
-                    <GanttChart tasks={tasks} onUpdateDates={updateTaskDates} />
+                    <GanttChart tasks={tasks} onUpdateDates={updateTaskDates} onUpdateTimes={updateTaskTimes} />
                   </div>
                 </div>
               </div>
             </div>
           )}
 
-          {/* All Projects view: Pie Chart + Timesheet + Gantt */}
+          {/* All Projects view */}
           {selectedProjectId === 'all' && (
             <div className="px-6 py-6 space-y-5">
               {loading ? (
@@ -117,9 +122,9 @@ const Index = () => {
                       Timesheet & Gantt Chart — All Projects
                     </h2>
                     <div className="grid grid-cols-1 xl:grid-cols-[minmax(0,1fr)_minmax(0,1.5fr)] gap-5">
-                      <Timesheet tasks={tasks} onUpdateDates={updateTaskDates} />
+                      <Timesheet tasks={tasks} onUpdateDates={updateTaskDates} onUpdateTimes={updateTaskTimes} />
                       <div className="border-l pl-5">
-                        <GanttChart tasks={tasks} onUpdateDates={updateTaskDates} />
+                        <GanttChart tasks={tasks} onUpdateDates={updateTaskDates} onUpdateTimes={updateTaskTimes} />
                       </div>
                     </div>
                   </div>
