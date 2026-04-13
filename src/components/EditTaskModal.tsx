@@ -8,6 +8,7 @@ interface Props {
   onClose: () => void;
   onUpdate: (taskId: string, updates: { title: string; description: string; priority: 'low' | 'medium' | 'high'; assignee: string }) => void;
   onDelete: (taskId: string) => void;
+  onStatusChange?: (taskId: string, status: 'todo' | 'in_progress' | 'done') => void;
 }
 
 export function EditTaskModal({ open, task, onClose, onUpdate, onDelete }: Props) {
