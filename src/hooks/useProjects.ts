@@ -1,111 +1,151 @@
 import { useState, useEffect, useCallback } from 'react';
-import type { Project, Task, TaskStatus } from '@/types/project';
-import { projectsApi, tasksApi, seedApi } from '@/lib/api';
+import { supabase } from '@/integrations/supabase/client';
+import { useAuth } from '@/contexts/AuthContext';
 import { toast } from 'sonner';
+import type { Tables } from '@/integrations/supabase/types';
 
-// Demo data used when API is unavailable
-const DEMO_PROJECTS: Project[] = [
-  { id: '1', name: 'Website Redesign', description: 'Modernize the company website', taskCount: 5 },
-  { id: '2', name: 'Mobile App', description: 'Build cross-platform mobile app', taskCount: 3 },
-  { id: '3', name: 'API Integration', description: 'Third-party API integrations', taskCount: 4 },
-];
+type DbProject = Tables<'projects'>;
+type DbTask = Tables<'tasks'>;
+type DbChangelog = Tables<'task_changelog'>;
 
-const DEMO_TASKS: Record<string, Task[]> = {
-  '1': [
-    { id: 't1', title: 'Design homepage mockup', description: 'Create wireframes and high-fidelity mockups', status: 'done', priority: 'high', assignee: 'Alice', changelog: [{ id: 'c1', message: 'Task created', timestamp: '2026-04-10T09:00:00Z' }, { id: 'c2', message: 'Moved to Done', timestamp: '2026-04-12T14:00:00Z' }], createdAt: '2026-04-10T09:00:00Z' },
-    { id: 't2', title: 'Implement nav component', description: 'Responsive navigation with mobile menu', status: 'in_progress', priority: 'medium', assignee: 'Bob', changelog: [{ id: 'c3', message: 'Task created', timestamp: '2026-04-10T10:00:00Z' }], createdAt: '2026-04-10T10:00:00Z' },
-    { id: 't3', title: 'Set up CI/CD pipeline', description: 'Automate deployments to staging', status: 'todo', priority: 'medium', changelog: [{ id: 'c4', message: 'Task created', timestamp: '2026-04-11T08:00:00Z' }], createdAt: '2026-04-11T08:00:00Z' },
-    { id: 't4', title: 'Write unit tests', description: 'Cover critical components with tests', status: 'todo', priority: 'low', assignee: 'Charlie', changelog: [{ id: 'c5', message: 'Task created', timestamp: '2026-04-11T09:00:00Z' }], createdAt: '2026-04-11T09:00:00Z' },
-    { id: 't5', title: 'Optimize images', description: 'Compress and serve responsive images', status: 'in_progress', priority: 'low', changelog: [{ id: 'c6', message: 'Task created', timestamp: '2026-04-12T07:00:00Z' }], createdAt: '2026-04-12T07:00:00Z' },
-  ],
-  '2': [
-    { id: 't6', title: 'Set up React Native project', description: 'Initialize and configure the project', status: 'done', priority: 'high', assignee: 'Alice', changelog: [{ id: 'c7', message: 'Task created', timestamp: '2026-04-09T08:00:00Z' }], createdAt: '2026-04-09T08:00:00Z' },
-    { id: 't7', title: 'Build auth screens', description: 'Login, register, forgot password', status: 'in_progress', priority: 'high', assignee: 'Bob', changelog: [{ id: 'c8', message: 'Task created', timestamp: '2026-04-10T08:00:00Z' }], createdAt: '2026-04-10T08:00:00Z' },
-    { id: 't8', title: 'Push notifications', description: 'Integrate Firebase Cloud Messaging', status: 'todo', priority: 'medium', changelog: [{ id: 'c9', message: 'Task created', timestamp: '2026-04-11T08:00:00Z' }], createdAt: '2026-04-11T08:00:00Z' },
-  ],
-  '3': [
-    { id: 't9', title: 'Stripe integration', description: 'Payment processing setup', status: 'in_progress', priority: 'high', assignee: 'Charlie', changelog: [{ id: 'c10', message: 'Task created', timestamp: '2026-04-08T08:00:00Z' }], createdAt: '2026-04-08T08:00:00Z' },
-    { id: 't10', title: 'SendGrid emails', description: 'Transactional email service', status: 'todo', priority: 'medium', changelog: [{ id: 'c11', message: 'Task created', timestamp: '2026-04-09T08:00:00Z' }], createdAt: '2026-04-09T08:00:00Z' },
-    { id: 't11', title: 'OAuth2 providers', description: 'Google and GitHub SSO', status: 'done', priority: 'high', assignee: 'Alice', changelog: [{ id: 'c12', message: 'Task created', timestamp: '2026-04-07T08:00:00Z' }], createdAt: '2026-04-07T08:00:00Z' },
-    { id: 't12', title: 'Webhook handlers', description: 'Process incoming webhooks', status: 'todo', priority: 'low', changelog: [{ id: 'c13', message: 'Task created', timestamp: '2026-04-10T08:00:00Z' }], createdAt: '2026-04-10T08:00:00Z' },
-  ],
-};
+export interface TaskWithChangelog extends DbTask {
+  changelog: DbChangelog[];
+}
+
+export interface ProjectWithCount extends DbProject {
+  taskCount: number;
+}
 
 export function useProjects() {
-  const [projects, setProjects] = useState<Project[]>(DEMO_PROJECTS);
-  const [selectedProjectId, setSelectedProjectId] = useState<string>(DEMO_PROJECTS[0].id);
-  const [tasks, setTasks] = useState<Task[]>(DEMO_TASKS['1']);
+  const { user } = useAuth();
+  const [projects, setProjects] = useState<ProjectWithCount[]>([]);
+  const [selectedProjectId, setSelectedProjectId] = useState<string>('');
+  const [tasks, setTasks] = useState<TaskWithChangelog[]>([]);
   const [loading, setLoading] = useState(false);
-  const [apiAvailable, setApiAvailable] = useState(false);
 
   const fetchProjects = useCallback(async () => {
-    try {
-      const res = await projectsApi.getAll();
-      setProjects(res.data);
-      setApiAvailable(true);
-      if (res.data.length > 0 && !res.data.find(p => p.id === selectedProjectId)) {
-        setSelectedProjectId(res.data[0].id);
-      }
-    } catch {
-      setApiAvailable(false);
-      setProjects(DEMO_PROJECTS);
+    if (!user) return;
+    const { data, error } = await supabase
+      .from('projects')
+      .select('*, tasks(id)')
+      .eq('user_id', user.id)
+      .order('created_at', { ascending: true });
+
+    if (error) { toast.error('Failed to load projects'); return; }
+
+    const mapped: ProjectWithCount[] = (data || []).map((p: any) => ({
+      ...p,
+      taskCount: p.tasks?.length || 0,
+    }));
+    // Remove the nested tasks array
+    mapped.forEach((p: any) => delete p.tasks);
+
+    setProjects(mapped);
+    if (mapped.length > 0 && !mapped.find(p => p.id === selectedProjectId)) {
+      setSelectedProjectId(mapped[0].id);
     }
-  }, [selectedProjectId]);
+  }, [user, selectedProjectId]);
 
   const fetchTasks = useCallback(async (projectId: string) => {
+    if (!projectId) { setTasks([]); return; }
     setLoading(true);
-    try {
-      if (apiAvailable) {
-        const res = await tasksApi.getByProject(projectId);
-        setTasks(res.data);
-      } else {
-        setTasks(DEMO_TASKS[projectId] || []);
-      }
-    } catch {
-      setTasks(DEMO_TASKS[projectId] || []);
-    } finally {
-      setLoading(false);
-    }
-  }, [apiAvailable]);
+    const { data, error } = await supabase
+      .from('tasks')
+      .select('*, task_changelog(*)')
+      .eq('project_id', projectId)
+      .order('created_at', { ascending: true });
 
-  useEffect(() => { fetchProjects(); }, []);
-  useEffect(() => { fetchTasks(selectedProjectId); }, [selectedProjectId, apiAvailable]);
+    if (error) { toast.error('Failed to load tasks'); setLoading(false); return; }
 
-  const moveTask = useCallback(async (taskId: string, newStatus: TaskStatus) => {
-    setTasks(prev => prev.map(t => {
-      if (t.id !== taskId) return t;
-      const entry = { id: `cl-${Date.now()}`, message: `Moved to ${newStatus.replace('_', ' ')}`, timestamp: new Date().toISOString() };
-      return { ...t, status: newStatus, changelog: [...t.changelog, entry] };
+    const mapped: TaskWithChangelog[] = (data || []).map((t: any) => ({
+      ...t,
+      changelog: (t.task_changelog || []).sort((a: any, b: any) => new Date(a.created_at).getTime() - new Date(b.created_at).getTime()),
     }));
-    if (apiAvailable) {
-      try { await tasksApi.updateStatus(taskId, newStatus); } catch { toast.error('Failed to update task status'); }
-    }
-  }, [apiAvailable]);
+    mapped.forEach((t: any) => delete t.task_changelog);
+    setTasks(mapped);
+    setLoading(false);
+  }, []);
 
-  const seedDatabase = useCallback(async () => {
-    try {
-      await seedApi.seed();
-      toast.success('Database seeded successfully');
-      await fetchProjects();
-    } catch {
-      toast.error('Failed to seed database. Is the API running?');
-    }
+  useEffect(() => { fetchProjects(); }, [user]);
+  useEffect(() => { if (selectedProjectId) fetchTasks(selectedProjectId); }, [selectedProjectId]);
+
+  const moveTask = useCallback(async (taskId: string, newStatus: 'todo' | 'in_progress' | 'done') => {
+    // Optimistic update
+    setTasks(prev => prev.map(t => t.id === taskId ? { ...t, status: newStatus } : t));
+
+    const { error } = await supabase.from('tasks').update({ status: newStatus }).eq('id', taskId);
+    if (error) { toast.error('Failed to update task'); fetchTasks(selectedProjectId); return; }
+
+    // Add changelog entry
+    await supabase.from('task_changelog').insert({
+      task_id: taskId,
+      message: `Status changed to ${newStatus.replace('_', ' ')}`,
+    });
+
+    fetchTasks(selectedProjectId);
+  }, [selectedProjectId, fetchTasks]);
+
+  const addProject = useCallback(async (name: string, description: string) => {
+    if (!user) return;
+    const { error } = await supabase.from('projects').insert({ name, description, user_id: user.id });
+    if (error) { toast.error('Failed to create project'); return; }
+    toast.success('Project created');
+    await fetchProjects();
+  }, [user, fetchProjects]);
+
+  const updateProject = useCallback(async (projectId: string, name: string, description: string) => {
+    const { error } = await supabase.from('projects').update({ name, description }).eq('id', projectId);
+    if (error) { toast.error('Failed to update project'); return; }
+    toast.success('Project updated');
+    await fetchProjects();
   }, [fetchProjects]);
 
-  const addProject = useCallback((name: string, description: string) => {
-    const newProject: Project = {
-      id: `p-${Date.now()}`,
-      name,
+  const addTask = useCallback(async (title: string, description: string, priority: 'low' | 'medium' | 'high', assignee: string) => {
+    if (!selectedProjectId) return;
+    const { data, error } = await supabase.from('tasks').insert({
+      project_id: selectedProjectId,
+      title,
       description,
-      taskCount: 0,
-    };
-    setProjects(prev => [...prev, newProject]);
-    setSelectedProjectId(newProject.id);
-    setTasks([]);
-    toast.success('Project created');
-  }, []);
+      priority,
+      assignee: assignee || null,
+    }).select().single();
+    if (error) { toast.error('Failed to create task'); return; }
+
+    await supabase.from('task_changelog').insert({ task_id: data.id, message: 'Task created' });
+    toast.success('Task created');
+    await fetchTasks(selectedProjectId);
+    await fetchProjects(); // update task count
+  }, [selectedProjectId, fetchTasks, fetchProjects]);
+
+  const seedDatabase = useCallback(async () => {
+    if (!user) return;
+    try {
+      // Create sample projects
+      const { data: p1 } = await supabase.from('projects').insert({ name: 'Website Redesign', description: 'Modernize the company website', user_id: user.id }).select().single();
+      const { data: p2 } = await supabase.from('projects').insert({ name: 'Mobile App', description: 'Build cross-platform mobile app', user_id: user.id }).select().single();
+
+      if (p1) {
+        const { data: t1 } = await supabase.from('tasks').insert({ project_id: p1.id, title: 'Design homepage mockup', description: 'Create wireframes and high-fidelity mockups', status: 'done', priority: 'high', assignee: 'Alice' }).select().single();
+        const { data: t2 } = await supabase.from('tasks').insert({ project_id: p1.id, title: 'Implement nav component', description: 'Responsive navigation with mobile menu', status: 'in_progress', priority: 'medium', assignee: 'Bob' }).select().single();
+        await supabase.from('tasks').insert({ project_id: p1.id, title: 'Set up CI/CD pipeline', description: 'Automate deployments to staging', status: 'todo', priority: 'medium' });
+        if (t1) await supabase.from('task_changelog').insert([{ task_id: t1.id, message: 'Task created' }, { task_id: t1.id, message: 'Moved to done' }]);
+        if (t2) await supabase.from('task_changelog').insert({ task_id: t2.id, message: 'Task created' });
+      }
+
+      if (p2) {
+        await supabase.from('tasks').insert({ project_id: p2.id, title: 'Set up React Native', description: 'Initialize and configure the project', status: 'done', priority: 'high', assignee: 'Alice' });
+        await supabase.from('tasks').insert({ project_id: p2.id, title: 'Build auth screens', description: 'Login, register, forgot password', status: 'in_progress', priority: 'high', assignee: 'Bob' });
+        await supabase.from('tasks').insert({ project_id: p2.id, title: 'Push notifications', description: 'Integrate Firebase Cloud Messaging', status: 'todo', priority: 'medium' });
+      }
+
+      toast.success('Database seeded with sample data');
+      await fetchProjects();
+    } catch {
+      toast.error('Failed to seed database');
+    }
+  }, [user, fetchProjects]);
 
   const selectedProject = projects.find(p => p.id === selectedProjectId);
 
-  return { projects, selectedProject, selectedProjectId, setSelectedProjectId, tasks, loading, moveTask, seedDatabase, addProject, apiAvailable };
+  return { projects, selectedProject, selectedProjectId, setSelectedProjectId, tasks, loading, moveTask, addProject, updateProject, addTask, seedDatabase };
 }
