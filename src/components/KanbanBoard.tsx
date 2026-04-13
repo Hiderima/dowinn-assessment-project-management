@@ -14,9 +14,10 @@ interface Props {
   tasks: TaskWithChangelog[];
   loading: boolean;
   onMoveTask: (taskId: string, newStatus: 'todo' | 'in_progress' | 'done') => void;
+  onEditTask?: (task: TaskWithChangelog) => void;
 }
 
-export function KanbanBoard({ tasks, loading, onMoveTask }: Props) {
+export function KanbanBoard({ tasks, loading, onMoveTask, onEditTask }: Props) {
   const [logTask, setLogTask] = useState<TaskWithChangelog | null>(null);
 
   const onDragEnd = (result: DropResult) => {
@@ -47,6 +48,7 @@ export function KanbanBoard({ tasks, loading, onMoveTask }: Props) {
               colorVar={col.colorVar}
               tasks={tasks.filter(t => t.status === col.id)}
               onOpenLog={setLogTask}
+              onEdit={onEditTask}
             />
           ))}
         </div>

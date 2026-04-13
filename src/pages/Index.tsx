@@ -4,18 +4,21 @@ import { ProjectSidebar } from '@/components/ProjectSidebar';
 import { KanbanBoard } from '@/components/KanbanBoard';
 import { AddProjectModal } from '@/components/AddProjectModal';
 import { AddTaskModal } from '@/components/AddTaskModal';
+import { EditTaskModal } from '@/components/EditTaskModal';
 import { ProjectProgressBar } from '@/components/ProjectProgressBar';
 import { TaskStatusPieChart } from '@/components/TaskStatusPieChart';
 import { Timesheet } from '@/components/Timesheet';
 import { GanttChart } from '@/components/GanttChart';
 import { useProjects } from '@/hooks/useProjects';
 import { useAuth } from '@/contexts/AuthContext';
+import type { TaskWithChangelog } from '@/hooks/useProjects';
 
 const Index = () => {
   const { user, signOut } = useAuth();
-  const { projects, selectedProject, selectedProjectId, setSelectedProjectId, tasks, loading, moveTask, addProject, addTask, updateTaskDates, updateTaskTimes, seedDatabase } = useProjects();
+  const { projects, selectedProject, selectedProjectId, setSelectedProjectId, tasks, loading, moveTask, addProject, addTask, updateTask, deleteTask, updateTaskDates, updateTaskTimes, seedDatabase } = useProjects();
   const [showAddProject, setShowAddProject] = useState(false);
   const [showAddTask, setShowAddTask] = useState(false);
+  const [editingTask, setEditingTask] = useState<TaskWithChangelog | null>(null);
 
   return (
     <div className="flex h-screen overflow-hidden">
@@ -65,7 +68,7 @@ const Index = () => {
                 {/* Left column: Progress + Kanban */}
                 <div className="space-y-4">
                   {tasks.length > 0 && <ProjectProgressBar tasks={tasks} />}
-                  <KanbanBoard tasks={tasks} loading={loading} onMoveTask={moveTask} />
+                  <KanbanBoard tasks={tasks} loading={loading} onMoveTask={moveTask} onEditTask={setEditingTask} />
                 </div>
 
                 {/* Right column: Task Distribution */}
@@ -139,6 +142,13 @@ const Index = () => {
 
       <AddProjectModal open={showAddProject} onClose={() => setShowAddProject(false)} onAdd={addProject} />
       <AddTaskModal open={showAddTask} onClose={() => setShowAddTask(false)} onAdd={addTask} />
+      <EditTaskModal
+        open={!!editingTask}
+        task={editingTask}
+        onClose={() => setEditingTask(null)}
+        onUpdate={updateTask}
+        onDelete={deleteTask}
+      />
     </div>
   );
 };

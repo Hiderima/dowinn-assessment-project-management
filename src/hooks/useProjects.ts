@@ -103,6 +103,28 @@ export function useProjects() {
     if (error) { toast.error('Failed to update times'); fetchTasks(selectedProjectId); }
   }, [selectedProjectId, fetchTasks]);
 
+  const updateTask = useCallback(async (taskId: string, updates: { title: string; description: string; priority: 'low' | 'medium' | 'high'; assignee: string }) => {
+    setTasks(prev => prev.map(t => t.id === taskId ? { ...t, ...updates, assignee: updates.assignee || null } : t));
+    const { error } = await supabase.from('tasks').update({
+      title: updates.title,
+      description: updates.description,
+      priority: updates.priority,
+      assignee: updates.assignee || null,
+    }).eq('id', taskId);
+    if (error) { toast.error('Failed to update task'); fetchTasks(selectedProjectId); return; }
+    toast.success('Task updated');
+    await supabase.from('task_changelog').insert({ task_id: taskId, message: 'Task details updated' });
+    fetchTasks(selectedProjectId);
+  }, [selectedProjectId, fetchTasks]);
+
+  const deleteTask = useCallback(async (taskId: string) => {
+    setTasks(prev => prev.filter(t => t.id !== taskId));
+    const { error } = await supabase.from('tasks').delete().eq('id', taskId);
+    if (error) { toast.error('Failed to delete task'); fetchTasks(selectedProjectId); return; }
+    toast.success('Task deleted');
+    await fetchProjects();
+  }, [selectedProjectId, fetchTasks, fetchProjects]);
+
   const addProject = useCallback(async (name: string, description: string) => {
     if (!user) return;
     const { error } = await supabase.from('projects').insert({ name, description, user_id: user.id });
@@ -165,5 +187,5 @@ export function useProjects() {
 
   const selectedProject = projects.find(p => p.id === selectedProjectId);
 
-  return { projects, selectedProject, selectedProjectId, setSelectedProjectId, tasks, loading, moveTask, addProject, updateProject, addTask, updateTaskDates, updateTaskTimes, seedDatabase };
+  return { projects, selectedProject, selectedProjectId, setSelectedProjectId, tasks, loading, moveTask, addProject, updateProject, addTask, updateTask, deleteTask, updateTaskDates, updateTaskTimes, seedDatabase };
 }

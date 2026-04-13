@@ -9,9 +9,10 @@ interface Props {
   colorVar: string;
   tasks: TaskWithChangelog[];
   onOpenLog: (task: TaskWithChangelog) => void;
+  onEdit?: (task: TaskWithChangelog) => void;
 }
 
-export function KanbanColumn({ status, title, colorVar, tasks, onOpenLog }: Props) {
+export function KanbanColumn({ status, title, colorVar, tasks, onOpenLog, onEdit }: Props) {
   return (
     <div className="flex-1 min-w-[300px] flex flex-col">
       <div className="flex items-center gap-2.5 mb-4 px-1">
@@ -27,7 +28,7 @@ export function KanbanColumn({ status, title, colorVar, tasks, onOpenLog }: Prop
             className={cn('flex-1 space-y-2.5 p-2 rounded-lg transition-colors min-h-[200px]', snapshot.isDraggingOver ? 'bg-primary/5' : 'bg-muted/30')}
           >
             {tasks.map((task, i) => (
-              <TaskCard key={task.id} task={task} index={i} onOpenLog={onOpenLog} />
+              <TaskCard key={task.id} task={task} index={i} onOpenLog={onOpenLog} onEdit={onEdit} />
             ))}
             {provided.placeholder}
           </div>
