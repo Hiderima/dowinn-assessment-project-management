@@ -116,14 +116,9 @@ const Index = () => {
                   <div className="bg-card rounded-xl border p-5">
                     <h2 className="text-sm font-semibold text-card-foreground mb-4 flex items-center gap-2">
                       <Table2 className="w-4 h-4 text-primary" />
-                      Timesheet & Gantt Chart — All Projects
+                      Timeline — All Projects
                     </h2>
-                    <div className="grid grid-cols-1 xl:grid-cols-[minmax(0,1fr)_minmax(0,1.5fr)] gap-5">
-                      <Timesheet tasks={tasks} onUpdateDates={updateTaskDates} onUpdateTimes={updateTaskTimes} />
-                      <div className="border-l pl-5">
-                        <GanttChart tasks={tasks} onUpdateDates={updateTaskDates} onUpdateTimes={updateTaskTimes} />
-                      </div>
-                    </div>
+                    <TimelineView tasks={tasks} onUpdateDates={updateTaskDates} onUpdateTimes={updateTaskTimes} onEditTask={setEditingTask} />
                   </div>
                 </>
               ) : (
