@@ -1,6 +1,6 @@
 import { useState, useRef, useCallback, useEffect, useMemo } from 'react';
-import { format, differenceInDays, addDays, parseISO, startOfDay } from 'date-fns';
-import { Calendar as CalendarIcon } from 'lucide-react';
+import { format, differenceInDays, addDays, parseISO, startOfDay, subDays } from 'date-fns';
+import { Calendar as CalendarIcon, ChevronLeft, ChevronRight } from 'lucide-react';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { Calendar } from '@/components/ui/calendar';
 import { cn } from '@/lib/utils';
