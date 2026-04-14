@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { LayoutDashboard, Table2, PieChart as PieIcon, Plus, LogOut, Menu, X, Moon, Sun } from 'lucide-react';
 import { ProjectSidebar } from '@/components/ProjectSidebar';
 import { KanbanBoard } from '@/components/KanbanBoard';
@@ -10,6 +10,7 @@ import { TaskStatusPieChart } from '@/components/TaskStatusPieChart';
 import { TimelineView } from '@/components/TimelineView';
 import { useProjects } from '@/hooks/useProjects';
 import { useAuth } from '@/contexts/AuthContext';
+import { supabase } from '@/integrations/supabase/client';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { useTheme } from '@/hooks/useTheme';
 import type { TaskWithChangelog } from '@/hooks/useProjects';
@@ -24,6 +25,14 @@ const Index = () => {
   const [kanbanOpen, setKanbanOpen] = useState(false);
   const isMobile = useIsMobile();
   const { theme, toggle: toggleTheme } = useTheme();
+  const [displayName, setDisplayName] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (!user) return;
+    supabase.from('profiles').select('display_name').eq('user_id', user.id).maybeSingle().then(({ data }) => {
+      setDisplayName(data?.display_name || null);
+    });
+  }, [user]);
 
   return (
     <div className="flex h-screen overflow-hidden">
@@ -89,7 +98,7 @@ const Index = () => {
             <button onClick={toggleTheme} className="p-1.5 rounded-md text-muted-foreground hover:bg-muted hover:text-foreground transition-colors" title="Toggle dark mode">
               {theme === 'dark' ? <Sun className="w-4 h-4" /> : <Moon className="w-4 h-4" />}
             </button>
-            <span className="text-xs text-muted-foreground hidden md:inline">{user?.user_metadata?.full_name || user?.email}</span>
+            <span className="text-xs text-muted-foreground hidden md:inline">{displayName || user?.user_metadata?.full_name || 'User'}</span>
             <button onClick={signOut} className="p-1.5 rounded-md text-muted-foreground hover:bg-muted hover:text-foreground transition-colors" title="Sign out">
               <LogOut className="w-4 h-4" />
             </button>
