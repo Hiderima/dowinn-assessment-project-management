@@ -68,10 +68,11 @@ const Index = () => {
             <LayoutDashboard className="w-5 h-5 text-primary hidden md:block" />
             <div>
               <h1 className="text-sm font-semibold text-card-foreground">
-                {selectedProjectId === 'all' ? 'All Projects' : selectedProject?.name || 'Select a project'}
+                {selectedProjectId === 'all' ? 'All Projects' : selectedProjectId === 'my' ? 'My Projects' : selectedProject?.name || 'Select a project'}
               </h1>
-              {selectedProjectId !== 'all' && selectedProject && <p className="text-xs text-muted-foreground hidden md:block">{selectedProject.description}</p>}
+              {selectedProjectId !== 'all' && selectedProjectId !== 'my' && selectedProject && <p className="text-xs text-muted-foreground hidden md:block">{selectedProject.description}</p>}
               {selectedProjectId === 'all' && <p className="text-xs text-muted-foreground hidden md:block">Overview of all projects</p>}
+              {selectedProjectId === 'my' && <p className="text-xs text-muted-foreground hidden md:block">Projects where you are assigned</p>}
             </div>
           </div>
           <div className="flex items-center gap-1.5 md:gap-2">
