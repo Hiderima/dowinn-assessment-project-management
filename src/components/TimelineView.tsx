@@ -4,11 +4,17 @@ import { ChevronLeft, ChevronRight, User, Clock, Pencil } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import type { TaskWithChangelog } from '@/hooks/useProjects';
 
+interface ProjectInfo {
+  id: string;
+  name: string;
+}
+
 interface Props {
   tasks: TaskWithChangelog[];
   onUpdateDates: (taskId: string, startDate: string, endDate: string) => void;
   onUpdateTimes?: (taskId: string, startTime: string, endTime: string) => void;
   onEditTask?: (task: TaskWithChangelog) => void;
+  projects?: ProjectInfo[];
 }
 
 const statusColor: Record<string, string> = {
@@ -39,7 +45,7 @@ const TASK_LIST_WIDTH = 320;
 const DAY_WIDTH = 44;
 const ROW_HEIGHT = 44;
 
-export function TimelineView({ tasks, onUpdateDates, onUpdateTimes, onEditTask }: Props) {
+export function TimelineView({ tasks, onUpdateDates, onUpdateTimes, onEditTask, projects }: Props) {
   const [viewOffset, setViewOffset] = useState(0);
   const timelineRef = useRef<HTMLDivElement>(null);
   const taskListRef = useRef<HTMLDivElement>(null);
@@ -159,6 +165,12 @@ export function TimelineView({ tasks, onUpdateDates, onUpdateTimes, onEditTask }
                   <div className="flex-1 min-w-0">
                     <div className="text-xs font-medium text-card-foreground truncate">{task.title}</div>
                     <div className="flex items-center gap-1.5 mt-0.5">
+                      {projects && projects.length > 0 && (() => {
+                        const proj = projects.find(p => p.id === task.project_id);
+                        return proj ? (
+                          <span className="text-[10px] text-primary/80 font-medium truncate max-w-[100px]">{proj.name}</span>
+                        ) : null;
+                      })()}
                       {task.assignee && (
                         <span className="flex items-center gap-0.5 text-[10px] text-muted-foreground">
                           <User className="w-2.5 h-2.5" /> {task.assignee}
