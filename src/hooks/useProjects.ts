@@ -148,18 +148,20 @@ export function useProjects() {
     if (error) { toast.error('Failed to update times'); fetchTasks(selectedProjectId); }
   }, [selectedProjectId, fetchTasks]);
 
-  const updateTask = useCallback(async (taskId: string, updates: { title: string; description: string; priority: 'low' | 'medium' | 'high'; assignee: string }) => {
-    setTasks(prev => prev.map(t => t.id === taskId ? { ...t, ...updates, assignee: updates.assignee || null } : t));
+  const updateTask = useCallback(async (taskId: string, updates: { title: string; description: string; priority: 'low' | 'medium' | 'high'; assignee: string; department: string }) => {
+    setTasks(prev => prev.map(t => t.id === taskId ? ({ ...t, ...updates, assignee: updates.assignee || null, department: updates.department || null } as any) : t));
     const { error } = await supabase.from('tasks').update({
       title: updates.title,
       description: updates.description,
       priority: updates.priority,
       assignee: updates.assignee || null,
-    }).eq('id', taskId);
+      department: updates.department || null,
+    } as any).eq('id', taskId);
     if (error) { toast.error('Failed to update task'); fetchTasks(selectedProjectId); return; }
     toast.success('Task updated');
     await supabase.from('task_changelog').insert({ task_id: taskId, message: 'Task details updated' });
     fetchTasks(selectedProjectId);
+    window.dispatchEvent(new Event('tasks-updated'));
   }, [selectedProjectId, fetchTasks]);
 
   const deleteTask = useCallback(async (taskId: string) => {
@@ -168,6 +170,7 @@ export function useProjects() {
     if (error) { toast.error('Failed to delete task'); fetchTasks(selectedProjectId); return; }
     toast.success('Task deleted');
     await fetchProjects();
+    window.dispatchEvent(new Event('tasks-updated'));
   }, [selectedProjectId, fetchTasks, fetchProjects]);
 
   const addProject = useCallback(async (name: string, description: string) => {
@@ -194,7 +197,7 @@ export function useProjects() {
     await fetchProjects();
   }, [fetchProjects]);
 
-  const addTask = useCallback(async (title: string, description: string, priority: 'low' | 'medium' | 'high', assignee: string) => {
+  const addTask = useCallback(async (title: string, description: string, priority: 'low' | 'medium' | 'high', assignee: string, department: string) => {
     if (!selectedProjectId) return;
     const { data, error } = await supabase.from('tasks').insert({
       project_id: selectedProjectId,
@@ -202,13 +205,15 @@ export function useProjects() {
       description,
       priority,
       assignee: assignee || null,
-    }).select().single();
+      department: department || null,
+    } as any).select().single();
     if (error) { toast.error('Failed to create task'); return; }
 
     await supabase.from('task_changelog').insert({ task_id: data.id, message: 'Task created' });
     toast.success('Task created');
     await fetchTasks(selectedProjectId);
-    await fetchProjects(); // update task count
+    await fetchProjects();
+    window.dispatchEvent(new Event('tasks-updated'));
   }, [selectedProjectId, fetchTasks, fetchProjects]);
 
   const seedDatabase = useCallback(async () => {

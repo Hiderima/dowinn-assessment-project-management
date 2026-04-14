@@ -7,7 +7,7 @@ interface Props {
   open: boolean;
   task: TaskWithChangelog | null;
   onClose: () => void;
-  onUpdate: (taskId: string, updates: { title: string; description: string; priority: 'low' | 'medium' | 'high'; assignee: string }) => void;
+  onUpdate: (taskId: string, updates: { title: string; description: string; priority: 'low' | 'medium' | 'high'; assignee: string; department: string }) => void;
   onDelete: (taskId: string) => void;
   onStatusChange?: (taskId: string, status: 'todo' | 'in_progress' | 'done') => void;
 }
@@ -24,14 +24,17 @@ export function EditTaskModal({ open, task, onClose, onUpdate, onDelete, onStatu
 
   useEffect(() => {
     if (task) {
+      const taskDepartment = (task as TaskWithChangelog & { department?: string | null }).department;
       setTitle(task.title);
       setDescription(task.description || '');
       setPriority(task.priority);
       setAssignee(task.assignee || '');
       setStatus(task.status);
       setConfirmDelete(false);
-      // Try to detect department from assignee
-      if (task.assignee) {
+
+      if (taskDepartment) {
+        setSelectedDepartment(taskDepartment);
+      } else if (task.assignee) {
         const match = employees.find(e => `${e.display_name} (${e.employee_number})` === task.assignee);
         setSelectedDepartment(match?.department || '');
       } else {
@@ -47,7 +50,7 @@ export function EditTaskModal({ open, task, onClose, onUpdate, onDelete, onStatu
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (!title.trim()) return;
-    onUpdate(task.id, { title: title.trim(), description: description.trim(), priority, assignee });
+    onUpdate(task.id, { title: title.trim(), description: description.trim(), priority, assignee, department: selectedDepartment });
     if (status !== task.status && onStatusChange) {
       onStatusChange(task.id, status);
     }

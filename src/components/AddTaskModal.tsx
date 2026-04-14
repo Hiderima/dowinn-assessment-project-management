@@ -5,7 +5,7 @@ import { useEmployees } from '@/hooks/useEmployees';
 interface Props {
   open: boolean;
   onClose: () => void;
-  onAdd: (title: string, description: string, priority: 'low' | 'medium' | 'high', assignee: string) => void;
+  onAdd: (title: string, description: string, priority: 'low' | 'medium' | 'high', assignee: string, department: string) => void;
 }
 
 export function AddTaskModal({ open, onClose, onAdd }: Props) {
@@ -22,8 +22,8 @@ export function AddTaskModal({ open, onClose, onAdd }: Props) {
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    if (!title.trim()) return;
-    onAdd(title.trim(), description.trim(), priority, assignee);
+    if (!title.trim() || !selectedDepartment) return;
+    onAdd(title.trim(), description.trim(), priority, assignee, selectedDepartment);
     setTitle('');
     setDescription('');
     setPriority('medium');
@@ -67,6 +67,7 @@ export function AddTaskModal({ open, onClose, onAdd }: Props) {
               value={selectedDepartment}
               onChange={e => { setSelectedDepartment(e.target.value); setAssignee(''); }}
               className="w-full px-3 py-2 rounded-lg border bg-background text-foreground text-sm focus:outline-none focus:ring-2 focus:ring-primary/30"
+              required
             >
               <option value="">Select department...</option>
               {departments.map(d => <option key={d} value={d}>{d}</option>)}
@@ -91,7 +92,7 @@ export function AddTaskModal({ open, onClose, onAdd }: Props) {
           )}
           <div className="flex justify-end gap-2 pt-2">
             <button type="button" onClick={onClose} className="px-4 py-2 text-sm rounded-lg text-muted-foreground hover:bg-muted transition-colors">Cancel</button>
-            <button type="submit" disabled={!title.trim()} className="px-4 py-2 text-sm rounded-lg bg-primary text-primary-foreground font-medium hover:bg-primary/90 transition-colors disabled:opacity-40">Create Task</button>
+            <button type="submit" disabled={!title.trim() || !selectedDepartment} className="px-4 py-2 text-sm rounded-lg bg-primary text-primary-foreground font-medium hover:bg-primary/90 transition-colors disabled:opacity-40">Create Task</button>
           </div>
         </form>
       </div>
