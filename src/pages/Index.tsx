@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { LayoutDashboard, Table2, PieChart as PieIcon, Plus, LogOut, Menu, X, Moon, Sun } from 'lucide-react';
 import { ProjectSidebar } from '@/components/ProjectSidebar';
 import { KanbanBoard } from '@/components/KanbanBoard';
