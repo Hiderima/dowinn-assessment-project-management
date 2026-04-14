@@ -89,10 +89,10 @@ export function useProjects() {
 
       if (!profile?.department) { setTasks([]); setLoading(false); return; }
 
-      const { data, error } = await supabase
+      const { data, error } = await (supabase
         .from('tasks')
-        .select('*, task_changelog(*)')
-        .eq('department' as any, profile.department)
+        .select('*, task_changelog(*)') as any)
+        .eq('department', profile.department)
         .order('created_at', { ascending: true });
 
       if (error) { toast.error('Failed to load tasks'); setLoading(false); return; }
