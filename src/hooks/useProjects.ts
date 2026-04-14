@@ -109,6 +109,7 @@ export function useProjects() {
       return;
     }
 
+    let query = supabase
       .from('tasks')
       .select('*, task_changelog(*)')
       .order('created_at', { ascending: true });
