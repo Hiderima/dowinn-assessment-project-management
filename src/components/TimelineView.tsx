@@ -327,11 +327,9 @@ function TimelineRow({ task, timelineStart, totalDays, onUpdateDates, onEditTask
     };
   }, [dragging, dragOrigin, timelineStart, task.id, onUpdateDates]);
 
-  const handleBarClick = useCallback((e: React.MouseEvent) => {
-    // Only open popover if user didn't drag
-    if (!didDrag.current) {
-      setPopoverOpen(true);
-    }
+  const handleBarDoubleClick = useCallback((e: React.MouseEvent) => {
+    e.stopPropagation();
+    setPopoverOpen(true);
   }, []);
 
   const handleApplyDates = useCallback(() => {
@@ -397,7 +395,7 @@ function TimelineRow({ task, timelineStart, totalDays, onUpdateDates, onEditTask
               zIndex: dragging ? 20 : 5,
             }}
             onMouseDown={(e) => handleMouseDown(e, 'move')}
-            onMouseUp={handleBarClick}
+            onDoubleClick={handleBarDoubleClick}
           >
             {/* Left resize handle */}
             <div
