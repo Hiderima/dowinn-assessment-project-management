@@ -16,6 +16,7 @@ import { useAuth } from '@/contexts/AuthContext';
 import { supabase } from '@/integrations/supabase/client';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { useTheme } from '@/hooks/useTheme';
+import { useAdmin } from '@/hooks/useAdmin';
 import type { TaskWithChangelog } from '@/hooks/useProjects';
 
 const Index = () => {
