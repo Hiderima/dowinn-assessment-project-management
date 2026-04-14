@@ -1,8 +1,11 @@
 import { useState, useRef, useEffect, useCallback, useMemo } from 'react';
 import { format, differenceInDays, addDays, parseISO, startOfDay } from 'date-fns';
-import { ChevronLeft, ChevronRight, User, Clock, Pencil } from 'lucide-react';
+import { ChevronLeft, ChevronRight, User, Clock, Pencil, CalendarIcon } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import type { TaskWithChangelog } from '@/hooks/useProjects';
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
+import { Calendar } from '@/components/ui/calendar';
+import { Button } from '@/components/ui/button';
 
 interface ProjectInfo {
   id: string;
@@ -269,10 +272,21 @@ function TimelineRow({ task, timelineStart, totalDays, onUpdateDates, onEditTask
 
   const [dragging, setDragging] = useState<'move' | 'start' | 'end' | null>(null);
   const [dragOrigin, setDragOrigin] = useState({ x: 0, offset: startOffset, dur: duration });
+  const [popoverOpen, setPopoverOpen] = useState(false);
+  const [pickerStart, setPickerStart] = useState<Date>(taskStart);
+  const [pickerEnd, setPickerEnd] = useState<Date>(taskEnd);
+  const didDrag = useRef(false);
+
+  // Sync picker state when task dates change externally
+  useEffect(() => {
+    setPickerStart(task.start_date ? parseISO(task.start_date) : new Date(task.created_at));
+    setPickerEnd(task.end_date ? parseISO(task.end_date) : addDays(taskStart, 3));
+  }, [task.start_date, task.end_date]);
 
   const handleMouseDown = useCallback((e: React.MouseEvent, type: 'move' | 'start' | 'end') => {
     e.preventDefault();
     e.stopPropagation();
+    didDrag.current = false;
     setDragging(type);
     setDragOrigin({ x: e.clientX, offset: startOffset, dur: duration });
   }, [startOffset, duration]);
@@ -283,6 +297,7 @@ function TimelineRow({ task, timelineStart, totalDays, onUpdateDates, onEditTask
     const handleMouseMove = (e: MouseEvent) => {
       const dx = e.clientX - dragOrigin.x;
       const daysDelta = Math.round(dx / DAY_WIDTH);
+      if (daysDelta !== 0) didDrag.current = true;
 
       if (dragging === 'move') {
         const newOffset = dragOrigin.offset + daysDelta;
@@ -311,6 +326,20 @@ function TimelineRow({ task, timelineStart, totalDays, onUpdateDates, onEditTask
       window.removeEventListener('mouseup', handleMouseUp);
     };
   }, [dragging, dragOrigin, timelineStart, task.id, onUpdateDates]);
+
+  const handleBarClick = useCallback((e: React.MouseEvent) => {
+    // Only open popover if user didn't drag
+    if (!didDrag.current) {
+      setPopoverOpen(true);
+    }
+  }, []);
+
+  const handleApplyDates = useCallback(() => {
+    if (pickerStart && pickerEnd && pickerEnd >= pickerStart) {
+      onUpdateDates(task.id, format(pickerStart, 'yyyy-MM-dd'), format(pickerEnd, 'yyyy-MM-dd'));
+    }
+    setPopoverOpen(false);
+  }, [pickerStart, pickerEnd, task.id, onUpdateDates]);
 
   const todayStr = format(new Date(), 'yyyy-MM-dd');
   const barLeft = startOffset * DAY_WIDTH;
@@ -351,40 +380,78 @@ function TimelineRow({ task, timelineStart, totalDays, onUpdateDates, onEditTask
         );
       })}
 
-      {/* Gantt bar */}
-      <div
-        className={cn(
-          'absolute top-2 rounded-md cursor-grab active:cursor-grabbing transition-shadow hover:shadow-lg group/bar flex items-center',
-          dragging && 'shadow-lg'
-        )}
-        style={{
-          left: barLeft + 2,
-          width: barWidth,
-          height: ROW_HEIGHT - 16,
-          background: statusColorRaw[task.status],
-          opacity: dragging ? 0.9 : 0.8,
-          zIndex: dragging ? 20 : 5,
-        }}
-        onMouseDown={(e) => handleMouseDown(e, 'move')}
-        onDoubleClick={() => onEditTask?.(task)}
-      >
-        {/* Left resize handle */}
-        <div
-          className="absolute left-0 top-0 bottom-0 w-2 cursor-w-resize hover:bg-white/30 rounded-l-md"
-          onMouseDown={(e) => { e.stopPropagation(); handleMouseDown(e, 'start'); }}
-        />
+      {/* Gantt bar with popover */}
+      <Popover open={popoverOpen} onOpenChange={setPopoverOpen}>
+        <PopoverTrigger asChild>
+          <div
+            className={cn(
+              'absolute top-2 rounded-md cursor-grab active:cursor-grabbing transition-shadow hover:shadow-lg group/bar flex items-center',
+              dragging && 'shadow-lg'
+            )}
+            style={{
+              left: barLeft + 2,
+              width: barWidth,
+              height: ROW_HEIGHT - 16,
+              background: statusColorRaw[task.status],
+              opacity: dragging ? 0.9 : 0.8,
+              zIndex: dragging ? 20 : 5,
+            }}
+            onMouseDown={(e) => handleMouseDown(e, 'move')}
+            onMouseUp={handleBarClick}
+          >
+            {/* Left resize handle */}
+            <div
+              className="absolute left-0 top-0 bottom-0 w-2 cursor-w-resize hover:bg-white/30 rounded-l-md"
+              onMouseDown={(e) => { e.stopPropagation(); handleMouseDown(e, 'start'); }}
+            />
 
-        {/* Bar content */}
-        <span className="text-[10px] text-white font-medium px-2.5 truncate select-none w-full text-center">
-          {task.title.length > 12 ? task.title.slice(0, 12) + '…' : task.title}
-        </span>
+            {/* Bar content */}
+            <span className="text-[10px] text-white font-medium px-2.5 truncate select-none w-full text-center">
+              {task.title.length > 12 ? task.title.slice(0, 12) + '…' : task.title}
+            </span>
 
-        {/* Right resize handle */}
-        <div
-          className="absolute right-0 top-0 bottom-0 w-2 cursor-e-resize hover:bg-white/30 rounded-r-md"
-          onMouseDown={(e) => { e.stopPropagation(); handleMouseDown(e, 'end'); }}
-        />
-      </div>
+            {/* Right resize handle */}
+            <div
+              className="absolute right-0 top-0 bottom-0 w-2 cursor-e-resize hover:bg-white/30 rounded-r-md"
+              onMouseDown={(e) => { e.stopPropagation(); handleMouseDown(e, 'end'); }}
+            />
+          </div>
+        </PopoverTrigger>
+        <PopoverContent className="w-auto p-4" align="start" side="bottom">
+          <div className="space-y-3">
+            <h4 className="text-sm font-semibold truncate max-w-[280px]">{task.title}</h4>
+            <div className="flex gap-4">
+              <div className="space-y-1">
+                <label className="text-xs font-medium text-muted-foreground">Start Date</label>
+                <Calendar
+                  mode="single"
+                  selected={pickerStart}
+                  onSelect={(d) => d && setPickerStart(d)}
+                  className="p-2 pointer-events-auto"
+                />
+              </div>
+              <div className="space-y-1">
+                <label className="text-xs font-medium text-muted-foreground">End Date</label>
+                <Calendar
+                  mode="single"
+                  selected={pickerEnd}
+                  onSelect={(d) => d && setPickerEnd(d)}
+                  disabled={(date) => date < pickerStart}
+                  className="p-2 pointer-events-auto"
+                />
+              </div>
+            </div>
+            <div className="flex items-center justify-between pt-1">
+              <span className="text-xs text-muted-foreground">
+                {format(pickerStart, 'MMM d')} — {format(pickerEnd, 'MMM d, yyyy')}
+              </span>
+              <Button size="sm" onClick={handleApplyDates}>
+                Apply
+              </Button>
+            </div>
+          </div>
+        </PopoverContent>
+      </Popover>
     </div>
   );
 }
