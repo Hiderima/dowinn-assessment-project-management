@@ -144,8 +144,8 @@ const Index = () => {
             </div>
           )}
 
-          {/* All Projects view */}
-          {selectedProjectId === 'all' && (
+          {/* All/My Projects overview */}
+          {(selectedProjectId === 'all' || selectedProjectId === 'my') && (
             <div className="px-4 md:px-6 py-6 space-y-5">
               {loading ? (
                 <div className="flex items-center justify-center py-12">
@@ -156,20 +156,22 @@ const Index = () => {
                   <div className="bg-card rounded-xl border p-4 md:p-5">
                     <h2 className="text-sm font-semibold text-card-foreground mb-4 flex items-center gap-2">
                       <PieIcon className="w-4 h-4 text-primary" />
-                      Overall Task Distribution
+                      {selectedProjectId === 'my' ? 'My Task Distribution' : 'Overall Task Distribution'}
                     </h2>
                     <TaskStatusPieChart tasks={tasks} projects={projects} />
                   </div>
                   <div className="bg-card rounded-xl border p-4 md:p-5">
                     <h2 className="text-sm font-semibold text-card-foreground mb-4 flex items-center gap-2">
                       <Table2 className="w-4 h-4 text-primary" />
-                      Timeline — All Projects
+                      {selectedProjectId === 'my' ? 'Timeline — My Projects' : 'Timeline — All Projects'}
                     </h2>
                     <TimelineView tasks={tasks} onUpdateDates={updateTaskDates} onUpdateTimes={updateTaskTimes} onEditTask={setEditingTask} projects={projects} />
                   </div>
                 </>
               ) : (
-                <div className="flex items-center justify-center py-12 text-sm text-muted-foreground">No tasks across any project</div>
+                <div className="flex items-center justify-center py-12 text-sm text-muted-foreground">
+                  {selectedProjectId === 'my' ? 'No tasks assigned to you' : 'No tasks across any project'}
+                </div>
               )}
             </div>
           )}
