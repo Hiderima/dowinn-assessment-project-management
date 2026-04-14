@@ -27,23 +27,39 @@ Navigate to your Desktop: cd Desktop
 
 Type this command:
 git clone https://github.com/Hiderima/dowinn-assessment-project-management.git
-Open the folder in VS Code: File > Open Folder > dowinn-assessment-project-management.
 
-Step 2: Initialize the Data (The Seed)
+In terminal again paste this
+cd dowinn-assessment-project-management
+
+then this
+code .
+
+Step 2: Lets manage the file
+on your vs code create two folder named frontend and backend
+put all the files that is in the eplorer in the frontend
+
+paste this in your terminal
+cd frontend
+then
+npm install
+then
+cd .. >> cd backend
+then
+npm init -y
+then
+npm install express cors dotenv pg prisma @prisma/client bcryptjs jsonwebtoken
+then
+npx prisma init
+
 Open a tool like Postman, or just use your browser.
 
-Go to: http://localhost:5000/api/seed (Use a POST request if using Postman, but we designed it so a simple trigger works).
-Verify: You should see {"message": "Database initialized..."}.
-
 Step 3: Set up the Frontend (The "Face")
-Open a second terminal tab in VS Code (click the + icon in the terminal panel).
+In your terminal paste this
+cd ../frontend
+then
+npm run dev
 
-Enter the frontend folder: cd frontend
-
-Install the libraries: npm install
-
-Start the app: npm run dev
-Open http://localhost:3000.
+Open http://localhost:8080 or whatever shows up in your terminal
 
 Step 4: The "Quality Control" Test
 Before you send the link to the recruiter, do these 3 tests:
