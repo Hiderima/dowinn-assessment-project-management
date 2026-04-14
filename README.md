@@ -1,11 +1,13 @@
 # Dowinn Project Management Tool - Full Stack Assessment
 
 ## 🚀 Project Overview
+
 A Kanban-style management tool designed with scalability and clean code standards. It tracks task movements and automatically generates a change history for audit purposes.
 
 Key Note: Hardcoded Keys are exposed and this is for assessment only. Any Details and Informations are Dummy Data to showcase the System and does not have a protection against cyber attackers.
 
 ### 🛠 Tech Stack
+
 - **Frontend:** Next.js (App Router), Tailwind CSS, Axios, @hello-pangea/dnd.
 - **Backend:** Node.js (Express), Prisma ORM.
 - **Database:** PostgreSQL (Hosted via Supabase).
@@ -27,31 +29,13 @@ Type this command:
 git clone https://github.com/Hiderima/dowinn-assessment-project-management.git
 Open the folder in VS Code: File > Open Folder > dowinn-assessment-project-management.
 
-Step 2: Set up the Backend (The "Brain")
-In the VS Code terminal, enter the backend folder: cd backend
-
-Install the libraries: npm install
-Create your Environment File:
-Click "New File" in the /backend folder.
-Name it .env
-Paste your database URL: DATABASE_URL="your-supabase-url-here"
-
-Sync your Database:
-
-Bash
-npx prisma migrate dev --name init
-Start the Server:
-
-node server.js
-(You should see "Server running on port 5000")
-
-Step 3: Initialize the Data (The Seed)
+Step 2: Initialize the Data (The Seed)
 Open a tool like Postman, or just use your browser.
 
 Go to: http://localhost:5000/api/seed (Use a POST request if using Postman, but we designed it so a simple trigger works).
 Verify: You should see {"message": "Database initialized..."}.
 
-Step 4: Set up the Frontend (The "Face")
+Step 3: Set up the Frontend (The "Face")
 Open a second terminal tab in VS Code (click the + icon in the terminal panel).
 
 Enter the frontend folder: cd frontend
@@ -61,9 +45,9 @@ Install the libraries: npm install
 Start the app: npm run dev
 Open http://localhost:3000.
 
-Step 5: The "Quality Control" Test
+Step 4: The "Quality Control" Test
 Before you send the link to the recruiter, do these 3 tests:
-[ ] Login: Try logging in with 000000 and 000000.
+[ ] Login: Try logging in with 500001 and pass500001.
 [ ] Drag & Drop: Move a task from "Todo" to "In Progress."
 [ ] Refresh: Refresh the page. If the task stays in "In Progress," your database connection is working perfectly.
 
