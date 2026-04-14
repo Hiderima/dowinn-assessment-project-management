@@ -90,13 +90,22 @@ const Index = () => {
               </button>
             )}
             {selectedProject && selectedProjectId !== 'all' && selectedProjectId !== 'my' && (
-              <button
-                onClick={() => setShowAddTask(true)}
-                className="flex items-center gap-1.5 px-2 md:px-3 py-1.5 rounded-md text-xs font-medium bg-primary text-primary-foreground hover:bg-primary/90 transition-colors"
-              >
-                <Plus className="w-3.5 h-3.5" />
-                <span className="hidden md:inline">Add Task</span>
-              </button>
+              <>
+                <button
+                  onClick={() => setShowEditProject(true)}
+                  className="p-1.5 rounded-md text-muted-foreground hover:bg-muted hover:text-foreground transition-colors"
+                  title="Edit project"
+                >
+                  <Settings className="w-4 h-4" />
+                </button>
+                <button
+                  onClick={() => setShowAddTask(true)}
+                  className="flex items-center gap-1.5 px-2 md:px-3 py-1.5 rounded-md text-xs font-medium bg-primary text-primary-foreground hover:bg-primary/90 transition-colors"
+                >
+                  <Plus className="w-3.5 h-3.5" />
+                  <span className="hidden md:inline">Add Task</span>
+                </button>
+              </>
             )}
             {/* Dark mode toggle */}
             <button onClick={toggleTheme} className="p-1.5 rounded-md text-muted-foreground hover:bg-muted hover:text-foreground transition-colors" title="Toggle dark mode">
