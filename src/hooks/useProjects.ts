@@ -102,7 +102,7 @@ export function useProjects() {
     mapped.sort((a, b) => priorityOrder[a.priority] - priorityOrder[b.priority]);
     setTasks(mapped);
     setLoading(false);
-  }, []);
+  }, [user]);
 
   useEffect(() => { fetchProjects(); }, [user]);
   useEffect(() => { if (selectedProjectId) fetchTasks(selectedProjectId); }, [selectedProjectId]);
