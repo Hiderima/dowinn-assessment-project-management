@@ -173,8 +173,9 @@ export function useProjects() {
   }, [fetchProjects]);
 
   const deleteProject = useCallback(async (projectId: string) => {
-    const { error } = await supabase.from('projects').delete().eq('id', projectId);
+    const { data, error } = await supabase.from('projects').delete().eq('id', projectId).select();
     if (error) { toast.error('Failed to delete project'); return; }
+    if (!data || data.length === 0) { toast.error('You can only delete projects you created'); return; }
     toast.success('Project deleted');
     setSelectedProjectId('all');
     await fetchProjects();
