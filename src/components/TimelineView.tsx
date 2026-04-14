@@ -395,7 +395,7 @@ function TimelineRow({ task, timelineStart, totalDays, onUpdateDates, onEditTask
               zIndex: dragging ? 20 : 5,
             }}
             onMouseDown={(e) => handleMouseDown(e, 'move')}
-            onMouseUp={handleBarClick}
+            onDoubleClick={handleBarDoubleClick}
           >
             {/* Left resize handle */}
             <div
