@@ -118,7 +118,7 @@ export default function AdminPanel() {
     try {
       await adminAction('delete', {
         user_id: deleteUser.user_id,
-        turnover_to: turnoverTo || undefined,
+        turnover_to: turnoverTo && turnoverTo !== 'none' ? turnoverTo : undefined,
       });
       toast.success('User deleted');
       setDeleteUser(null);
