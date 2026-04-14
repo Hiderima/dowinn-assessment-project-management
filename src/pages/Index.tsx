@@ -31,6 +31,7 @@ const Index = () => {
   const [kanbanOpen, setKanbanOpen] = useState(false);
   const [timelineDeptFilter, setTimelineDeptFilter] = useState<string>('all');
   const isMobile = useIsMobile();
+  const { departments } = useEmployees();
   const { theme, toggle: toggleTheme } = useTheme();
   const { isAdmin } = useAdmin();
   const navigate = useNavigate();
