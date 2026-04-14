@@ -107,6 +107,18 @@ export function useProjects() {
   useEffect(() => { fetchProjects(); }, [user]);
   useEffect(() => { if (selectedProjectId) fetchTasks(selectedProjectId); }, [selectedProjectId]);
 
+  // Realtime subscription for tasks
+  useEffect(() => {
+    const channel = supabase
+      .channel('tasks-realtime')
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'tasks' }, () => {
+        if (selectedProjectId) fetchTasks(selectedProjectId);
+        fetchProjects();
+      })
+      .subscribe();
+    return () => { supabase.removeChannel(channel); };
+  }, [selectedProjectId, fetchTasks, fetchProjects]);
+
   const moveTask = useCallback(async (taskId: string, newStatus: 'todo' | 'in_progress' | 'done') => {
     // Optimistic update
     setTasks(prev => prev.map(t => t.id === taskId ? { ...t, status: newStatus } : t));
