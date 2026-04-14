@@ -30,6 +30,8 @@ const Index = () => {
   const [kanbanOpen, setKanbanOpen] = useState(false);
   const isMobile = useIsMobile();
   const { theme, toggle: toggleTheme } = useTheme();
+  const { isAdmin } = useAdmin();
+  const navigate = useNavigate();
   const [displayName, setDisplayName] = useState<string | null>(null);
 
   useEffect(() => {
