@@ -13,7 +13,7 @@ function stripEmployeeNumber(assignee: string) {
   return assignee.replace(/\s*\(.*\)$/, '').trim();
 }
 
-export function DepartmentProgressBars() {
+export function DepartmentProgressBars({ filterDepartment }: { filterDepartment?: string } = {}) {
   const { employees } = useEmployees();
   const [allTasks, setAllTasks] = useState<DepartmentTask[]>([]);
 
