@@ -184,13 +184,15 @@ const Index = () => {
                     </h2>
                     <TaskStatusPieChart tasks={tasks} projects={projects} />
                   </div>
-                  <div className="bg-card rounded-xl border p-4 md:p-5">
-                    <h2 className="text-sm font-semibold text-card-foreground mb-4 flex items-center gap-2">
-                      <PieIcon className="w-4 h-4 text-primary" />
-                      Department Progress
-                    </h2>
-                    <DepartmentProgressBars />
-                  </div>
+                  {selectedProjectId === 'all' && (
+                    <div className="bg-card rounded-xl border p-4 md:p-5">
+                      <h2 className="text-sm font-semibold text-card-foreground mb-4 flex items-center gap-2">
+                        <PieIcon className="w-4 h-4 text-primary" />
+                        Department Progress
+                      </h2>
+                      <DepartmentProgressBars />
+                    </div>
+                  )}
                   <div className="bg-card rounded-xl border p-4 md:p-5">
                     <h2 className="text-sm font-semibold text-card-foreground mb-4 flex items-center gap-2">
                       <Table2 className="w-4 h-4 text-primary" />
