@@ -1,10 +1,11 @@
 import { useState, useEffect } from 'react';
-import { LayoutDashboard, Table2, PieChart as PieIcon, Plus, LogOut, Menu, X, Moon, Sun } from 'lucide-react';
+import { LayoutDashboard, Table2, PieChart as PieIcon, Plus, LogOut, Menu, X, Moon, Sun, Settings } from 'lucide-react';
 import { ProjectSidebar } from '@/components/ProjectSidebar';
 import { KanbanBoard } from '@/components/KanbanBoard';
 import { AddProjectModal } from '@/components/AddProjectModal';
 import { AddTaskModal } from '@/components/AddTaskModal';
 import { EditTaskModal } from '@/components/EditTaskModal';
+import { EditProjectModal } from '@/components/EditProjectModal';
 import { ProjectProgressBar } from '@/components/ProjectProgressBar';
 import { TaskStatusPieChart } from '@/components/TaskStatusPieChart';
 import { TimelineView } from '@/components/TimelineView';
@@ -18,8 +19,9 @@ import type { TaskWithChangelog } from '@/hooks/useProjects';
 
 const Index = () => {
   const { user, signOut } = useAuth();
-  const { projects, selectedProject, selectedProjectId, setSelectedProjectId, tasks, loading, moveTask, addProject, addTask, updateTask, deleteTask, updateTaskDates, updateTaskTimes, seedDatabase } = useProjects();
+  const { projects, selectedProject, selectedProjectId, setSelectedProjectId, tasks, loading, moveTask, addProject, updateProject, deleteProject, addTask, updateTask, deleteTask, updateTaskDates, updateTaskTimes, seedDatabase } = useProjects();
   const [showAddProject, setShowAddProject] = useState(false);
+  const [showEditProject, setShowEditProject] = useState(false);
   const [showAddTask, setShowAddTask] = useState(false);
   const [editingTask, setEditingTask] = useState<TaskWithChangelog | null>(null);
   const [sidebarOpen, setSidebarOpen] = useState(false);
@@ -88,13 +90,22 @@ const Index = () => {
               </button>
             )}
             {selectedProject && selectedProjectId !== 'all' && selectedProjectId !== 'my' && (
-              <button
-                onClick={() => setShowAddTask(true)}
-                className="flex items-center gap-1.5 px-2 md:px-3 py-1.5 rounded-md text-xs font-medium bg-primary text-primary-foreground hover:bg-primary/90 transition-colors"
-              >
-                <Plus className="w-3.5 h-3.5" />
-                <span className="hidden md:inline">Add Task</span>
-              </button>
+              <>
+                <button
+                  onClick={() => setShowEditProject(true)}
+                  className="p-1.5 rounded-md text-muted-foreground hover:bg-muted hover:text-foreground transition-colors"
+                  title="Edit project"
+                >
+                  <Settings className="w-4 h-4" />
+                </button>
+                <button
+                  onClick={() => setShowAddTask(true)}
+                  className="flex items-center gap-1.5 px-2 md:px-3 py-1.5 rounded-md text-xs font-medium bg-primary text-primary-foreground hover:bg-primary/90 transition-colors"
+                >
+                  <Plus className="w-3.5 h-3.5" />
+                  <span className="hidden md:inline">Add Task</span>
+                </button>
+              </>
             )}
             {/* Dark mode toggle */}
             <button onClick={toggleTheme} className="p-1.5 rounded-md text-muted-foreground hover:bg-muted hover:text-foreground transition-colors" title="Toggle dark mode">
@@ -188,6 +199,13 @@ const Index = () => {
 
       <AddProjectModal open={showAddProject} onClose={() => setShowAddProject(false)} onAdd={addProject} />
       <AddTaskModal open={showAddTask} onClose={() => setShowAddTask(false)} onAdd={addTask} />
+      <EditProjectModal
+        open={showEditProject}
+        project={selectedProject ? { id: selectedProject.id, name: selectedProject.name, description: selectedProject.description } : null}
+        onClose={() => setShowEditProject(false)}
+        onUpdate={updateProject}
+        onDelete={deleteProject}
+      />
       <EditTaskModal
         open={!!editingTask}
         task={editingTask}

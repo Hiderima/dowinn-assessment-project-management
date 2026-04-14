@@ -172,6 +172,14 @@ export function useProjects() {
     await fetchProjects();
   }, [fetchProjects]);
 
+  const deleteProject = useCallback(async (projectId: string) => {
+    const { error } = await supabase.from('projects').delete().eq('id', projectId);
+    if (error) { toast.error('Failed to delete project'); return; }
+    toast.success('Project deleted');
+    setSelectedProjectId('all');
+    await fetchProjects();
+  }, [fetchProjects]);
+
   const addTask = useCallback(async (title: string, description: string, priority: 'low' | 'medium' | 'high', assignee: string) => {
     if (!selectedProjectId) return;
     const { data, error } = await supabase.from('tasks').insert({
@@ -219,5 +227,5 @@ export function useProjects() {
 
   const selectedProject = projects.find(p => p.id === selectedProjectId);
 
-  return { projects, selectedProject, selectedProjectId, setSelectedProjectId, tasks, loading, moveTask, addProject, updateProject, addTask, updateTask, deleteTask, updateTaskDates, updateTaskTimes, seedDatabase };
+  return { projects, selectedProject, selectedProjectId, setSelectedProjectId, tasks, loading, moveTask, addProject, updateProject, deleteProject, addTask, updateTask, deleteTask, updateTaskDates, updateTaskTimes, seedDatabase };
 }
