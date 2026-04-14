@@ -87,7 +87,7 @@ const Index = () => {
           </div>
           <div className="flex items-center gap-1.5 md:gap-2">
             {/* Kanban burger toggle (mobile/tablet only) */}
-            {isMobile && selectedProjectId !== 'all' && selectedProjectId !== 'my' && (
+            {isMobile && !['all', 'my', 'dept'].includes(selectedProjectId) && (
               <button
                 onClick={() => setKanbanOpen(v => !v)}
                 className="p-1.5 rounded-md text-muted-foreground hover:bg-muted transition-colors"
@@ -96,7 +96,7 @@ const Index = () => {
                 {kanbanOpen ? <X className="w-4 h-4" /> : <LayoutDashboard className="w-4 h-4" />}
               </button>
             )}
-            {selectedProject && selectedProjectId !== 'all' && selectedProjectId !== 'my' && (
+            {selectedProject && !['all', 'my', 'dept'].includes(selectedProjectId) && (
               <>
                 <button
                   onClick={() => setShowEditProject(true)}
@@ -132,7 +132,7 @@ const Index = () => {
 
         <div className="flex-1 overflow-auto">
           {/* Individual project view */}
-          {selectedProjectId !== 'all' && selectedProjectId !== 'my' && (
+          {!['all', 'my', 'dept'].includes(selectedProjectId) && (
             <div className="px-4 md:px-6 pt-4 pb-2">
               <div className="grid grid-cols-1 lg:grid-cols-[1fr_auto] gap-5 items-start">
                 <div className="space-y-4">
@@ -156,7 +156,7 @@ const Index = () => {
           )}
 
           {/* Per-project Timeline */}
-          {selectedProjectId !== 'all' && selectedProjectId !== 'my' && tasks.length > 0 && (
+          {!['all', 'my', 'dept'].includes(selectedProjectId) && tasks.length > 0 && (
             <div className="px-4 md:px-6 pb-6">
               <div className="bg-card rounded-xl border p-4 md:p-5">
                 <h2 className="text-sm font-semibold text-card-foreground mb-4 flex items-center gap-2">
