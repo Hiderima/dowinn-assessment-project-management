@@ -40,7 +40,7 @@ export function useProjects() {
     mapped.forEach((p: any) => delete p.tasks);
 
     setProjects(mapped);
-    if (!selectedProjectId || (selectedProjectId !== 'all' && mapped.length > 0 && !mapped.find(p => p.id === selectedProjectId))) {
+    if (!selectedProjectId || (!['all', 'my', 'dept'].includes(selectedProjectId) && mapped.length > 0 && !mapped.find(p => p.id === selectedProjectId))) {
       setSelectedProjectId('all');
     }
   }, [user, selectedProjectId]);
