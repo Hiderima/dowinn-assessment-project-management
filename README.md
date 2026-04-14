@@ -3,6 +3,8 @@
 ## 🚀 Project Overview
 A Kanban-style management tool designed with scalability and clean code standards. It tracks task movements and automatically generates a change history for audit purposes.
 
+Key Note: Hardcoded Keys are exposed and this is for assessment only. Any Details and Informations are Dummy Data to showcase the System and does not have a protection against cyber attackers.
+
 ### 🛠 Tech Stack
 - **Frontend:** Next.js (App Router), Tailwind CSS, Axios, @hello-pangea/dnd.
 - **Backend:** Node.js (Express), Prisma ORM.
