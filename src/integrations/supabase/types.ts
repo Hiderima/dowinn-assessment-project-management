@@ -110,6 +110,7 @@ export type Database = {
         Row: {
           assignee: string | null
           created_at: string
+          department: string | null
           description: string | null
           end_date: string | null
           end_time: string | null
@@ -125,6 +126,7 @@ export type Database = {
         Insert: {
           assignee?: string | null
           created_at?: string
+          department?: string | null
           description?: string | null
           end_date?: string | null
           end_time?: string | null
@@ -140,6 +142,7 @@ export type Database = {
         Update: {
           assignee?: string | null
           created_at?: string
+          department?: string | null
           description?: string | null
           end_date?: string | null
           end_time?: string | null
