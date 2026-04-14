@@ -1,9 +1,13 @@
 import { useState, useEffect, useCallback } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useEmployees } from '@/hooks/useEmployees';
-import type { Tables } from '@/integrations/supabase/types';
 
-type DbTask = Tables<'tasks'>;
+type DepartmentTask = {
+  id: string;
+  status: 'todo' | 'in_progress' | 'done';
+  assignee: string | null;
+  department: string | null;
+};
 
 function stripEmployeeNumber(assignee: string) {
   return assignee.replace(/\s*\(.*\)$/, '').trim();
@@ -11,23 +15,21 @@ function stripEmployeeNumber(assignee: string) {
 
 export function DepartmentProgressBars() {
   const { employees } = useEmployees();
-  const [allTasks, setAllTasks] = useState<DbTask[]>([]);
+  const [allTasks, setAllTasks] = useState<DepartmentTask[]>([]);
 
   const fetchAllTasks = useCallback(async () => {
     const { data } = await supabase.from('tasks').select('*');
-    setAllTasks(data || []);
+    setAllTasks((data as DepartmentTask[]) || []);
   }, []);
 
   useEffect(() => { fetchAllTasks(); }, [fetchAllTasks]);
 
-  // Listen for custom 'tasks-updated' event (fired by moveTask, etc.)
   useEffect(() => {
     const handler = () => fetchAllTasks();
     window.addEventListener('tasks-updated', handler);
     return () => window.removeEventListener('tasks-updated', handler);
   }, [fetchAllTasks]);
 
-  // Realtime subscription
   useEffect(() => {
     const channel = supabase
       .channel('dept-tasks-realtime')
@@ -35,25 +37,28 @@ export function DepartmentProgressBars() {
         fetchAllTasks();
       })
       .subscribe();
-    return () => { supabase.removeChannel(channel); };
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
   }, [fetchAllTasks]);
 
-  // Map each employee name to their department
   const nameToDept = new Map<string, string>();
-  employees.forEach(e => {
-    if (e.display_name && e.department) {
-      nameToDept.set(e.display_name.toLowerCase(), e.department);
+  employees.forEach((employee) => {
+    if (employee.display_name && employee.department) {
+      nameToDept.set(employee.display_name.toLowerCase(), employee.department);
     }
   });
 
-  // Group tasks by department
-  const deptTasks = new Map<string, DbTask[]>();
-  allTasks.forEach(task => {
-    if (!task.assignee) return;
-    const name = stripEmployeeNumber(task.assignee).toLowerCase();
-    const dept = nameToDept.get(name);
+  const deptTasks = new Map<string, DepartmentTask[]>();
+  allTasks.forEach((task) => {
+    const dept = task.department || (task.assignee ? nameToDept.get(stripEmployeeNumber(task.assignee).toLowerCase()) || null : null);
     if (!dept) return;
-    if (!deptTasks.has(dept)) deptTasks.set(dept, []);
+
+    if (!deptTasks.has(dept)) {
+      deptTasks.set(dept, []);
+    }
+
     deptTasks.get(dept)!.push(task);
   });
 
@@ -63,11 +68,11 @@ export function DepartmentProgressBars() {
 
   return (
     <div className="space-y-4">
-      {sortedDepts.map(dept => {
+      {sortedDepts.map((dept) => {
         const dt = deptTasks.get(dept)!;
         const total = dt.length;
-        const done = dt.filter(t => t.status === 'done').length;
-        const inProgress = dt.filter(t => t.status === 'in_progress').length;
+        const done = dt.filter((task) => task.status === 'done').length;
+        const inProgress = dt.filter((task) => task.status === 'in_progress').length;
         const todo = total - done - inProgress;
         const donePercent = (done / total) * 100;
         const inProgressPercent = (inProgress / total) * 100;
