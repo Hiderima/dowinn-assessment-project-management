@@ -28,7 +28,6 @@ export function useProjects() {
     const { data, error } = await supabase
       .from('projects')
       .select('*, tasks(id)')
-      .eq('user_id', user.id)
       .order('created_at', { ascending: true });
 
     if (error) { toast.error('Failed to load projects'); return; }
