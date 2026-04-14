@@ -4,11 +4,17 @@ import { ChevronLeft, ChevronRight, User, Clock, Pencil } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import type { TaskWithChangelog } from '@/hooks/useProjects';
 
+interface ProjectInfo {
+  id: string;
+  name: string;
+}
+
 interface Props {
   tasks: TaskWithChangelog[];
   onUpdateDates: (taskId: string, startDate: string, endDate: string) => void;
   onUpdateTimes?: (taskId: string, startTime: string, endTime: string) => void;
   onEditTask?: (task: TaskWithChangelog) => void;
+  projects?: ProjectInfo[];
 }
 
 const statusColor: Record<string, string> = {
