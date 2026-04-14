@@ -69,3 +69,4 @@ Before you send the link to the recruiter, do these 3 tests:
 
 Developed by: Cedric E. Rivera
 Role: Full Stack Developer & AI Engineer
+
