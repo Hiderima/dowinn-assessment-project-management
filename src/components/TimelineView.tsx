@@ -43,8 +43,12 @@ const priorityBadge: Record<string, { bg: string; text: string }> = {
 
 const TASK_LIST_WIDTH = 320;
 const DAY_WIDTH = 44;
-const ROW_HEIGHT = 44;
+const ROW_HEIGHT = 52;
 
+function formatAssignee(assignee: string) {
+  // Strip employee number like "Name (123456)" → "Name"
+  return assignee.replace(/\s*\(.*\)$/, '');
+}
 export function TimelineView({ tasks, onUpdateDates, onUpdateTimes, onEditTask, projects }: Props) {
   const [viewOffset, setViewOffset] = useState(0);
   const timelineRef = useRef<HTMLDivElement>(null);
@@ -164,19 +168,19 @@ export function TimelineView({ tasks, onUpdateDates, onUpdateTimes, onEditTask, 
                   {/* Title + meta */}
                   <div className="flex-1 min-w-0">
                     <div className="text-xs font-medium text-card-foreground truncate">{task.title}</div>
-                    <div className="flex items-center gap-1.5 mt-0.5">
+                    <div className="flex items-center gap-2 mt-1 flex-wrap">
                       {projects && projects.length > 0 && (() => {
                         const proj = projects.find(p => p.id === task.project_id);
                         return proj ? (
-                          <span className="text-[10px] text-primary/80 font-medium truncate max-w-[100px]">{proj.name}</span>
+                          <span className="text-[10px] bg-primary/10 text-primary px-1.5 py-0.5 rounded font-medium truncate max-w-[110px]">{proj.name}</span>
                         ) : null;
                       })()}
                       {task.assignee && (
-                        <span className="flex items-center gap-0.5 text-[10px] text-muted-foreground">
-                          <User className="w-2.5 h-2.5" /> {task.assignee}
+                        <span className="flex items-center gap-0.5 text-[10px] text-muted-foreground truncate max-w-[100px]">
+                          <User className="w-2.5 h-2.5 shrink-0" /> {formatAssignee(task.assignee)}
                         </span>
                       )}
-                      <span className={cn('text-[9px] px-1 py-0 rounded font-medium', priorityBadge[task.priority].bg)}>
+                      <span className={cn('text-[9px] px-1.5 py-0.5 rounded font-medium', priorityBadge[task.priority].bg)}>
                         {priorityBadge[task.priority].text}
                       </span>
                     </div>
