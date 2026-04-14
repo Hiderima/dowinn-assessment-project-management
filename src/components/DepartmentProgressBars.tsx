@@ -62,7 +62,7 @@ export function DepartmentProgressBars({ filterDepartment }: { filterDepartment?
     deptTasks.get(dept)!.push(task);
   });
 
-  const sortedDepts = [...deptTasks.keys()].sort();
+  const sortedDepts = [...deptTasks.keys()].filter(d => !filterDepartment || d === filterDepartment).sort();
 
   if (sortedDepts.length === 0) return null;
 
