@@ -1,4 +1,4 @@
-import { FolderKanban, Settings, Database, ChevronRight, Plus, LayoutGrid } from 'lucide-react';
+import { FolderKanban, Settings, Database, ChevronRight, Plus, LayoutGrid, UserCircle } from 'lucide-react';
 import type { Project } from '@/types/project';
 import { cn } from '@/lib/utils';
 
@@ -43,6 +43,18 @@ export function ProjectSidebar({ projects, selectedId, onSelect, onSeed, onAddPr
             <LayoutGrid className="w-3.5 h-3.5" />
             <span>All Projects</span>
             <span className="ml-auto text-xs opacity-50">{projects.reduce((s, p) => s + p.taskCount, 0)}</span>
+          </button>
+          <button
+            onClick={() => onSelect('my')}
+            className={cn(
+              'w-full flex items-center gap-2.5 px-3 py-2 rounded-md text-sm transition-colors text-left',
+              selectedId === 'my'
+                ? 'bg-sidebar-accent text-sidebar-accent-foreground font-medium'
+                : 'text-sidebar-foreground hover:bg-sidebar-accent/50 hover:text-sidebar-accent-foreground'
+            )}
+          >
+            <UserCircle className="w-3.5 h-3.5" />
+            <span>My Projects</span>
           </button>
           {projects.map(p => (
             <button
