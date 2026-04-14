@@ -112,6 +112,11 @@ const Index = () => {
               </>
             )}
             {/* Dark mode toggle */}
+            {isAdmin && (
+              <button onClick={() => navigate('/admin')} className="p-1.5 rounded-md text-muted-foreground hover:bg-muted hover:text-foreground transition-colors" title="Admin Panel">
+                <Shield className="w-4 h-4" />
+              </button>
+            )}
             <button onClick={toggleTheme} className="p-1.5 rounded-md text-muted-foreground hover:bg-muted hover:text-foreground transition-colors" title="Toggle dark mode">
               {theme === 'dark' ? <Sun className="w-4 h-4" /> : <Moon className="w-4 h-4" />}
             </button>
