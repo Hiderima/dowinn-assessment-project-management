@@ -10,6 +10,7 @@ import { TaskStatusPieChart } from '@/components/TaskStatusPieChart';
 import { TimelineView } from '@/components/TimelineView';
 import { useProjects } from '@/hooks/useProjects';
 import { useAuth } from '@/contexts/AuthContext';
+import { supabase } from '@/integrations/supabase/client';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { useTheme } from '@/hooks/useTheme';
 import type { TaskWithChangelog } from '@/hooks/useProjects';
