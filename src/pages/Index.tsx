@@ -89,7 +89,7 @@ const Index = () => {
             <button onClick={toggleTheme} className="p-1.5 rounded-md text-muted-foreground hover:bg-muted hover:text-foreground transition-colors" title="Toggle dark mode">
               {theme === 'dark' ? <Sun className="w-4 h-4" /> : <Moon className="w-4 h-4" />}
             </button>
-            <span className="text-xs text-muted-foreground hidden md:inline">{user?.email}</span>
+            <span className="text-xs text-muted-foreground hidden md:inline">{user?.user_metadata?.full_name || user?.email}</span>
             <button onClick={signOut} className="p-1.5 rounded-md text-muted-foreground hover:bg-muted hover:text-foreground transition-colors" title="Sign out">
               <LogOut className="w-4 h-4" />
             </button>
