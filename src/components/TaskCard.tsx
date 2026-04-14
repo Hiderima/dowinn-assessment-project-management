@@ -40,7 +40,7 @@ export function TaskCard({ task, index, onOpenLog, onEdit }: Props) {
             <div className="flex items-center gap-3">
               {task.assignee && (
                 <span className="flex items-center gap-1 text-xs">
-                  <User className="w-3 h-3" /> {task.assignee}
+                  <User className="w-3 h-3" /> {task.assignee.replace(/\s*\(.*\)$/, '')}
                 </span>
               )}
               <span className="flex items-center gap-1 text-xs">
