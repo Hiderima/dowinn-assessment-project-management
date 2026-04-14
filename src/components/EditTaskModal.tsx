@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { X, Pencil, Trash2 } from 'lucide-react';
 import type { TaskWithChangelog } from '@/hooks/useProjects';
+import { useEmployees } from '@/hooks/useEmployees';
 
 interface Props {
   open: boolean;
@@ -15,9 +16,11 @@ export function EditTaskModal({ open, task, onClose, onUpdate, onDelete, onStatu
   const [title, setTitle] = useState('');
   const [description, setDescription] = useState('');
   const [priority, setPriority] = useState<'low' | 'medium' | 'high'>('medium');
+  const [selectedDepartment, setSelectedDepartment] = useState('');
   const [assignee, setAssignee] = useState('');
   const [status, setStatus] = useState<'todo' | 'in_progress' | 'done'>('todo');
   const [confirmDelete, setConfirmDelete] = useState(false);
+  const { departments, getByDepartment, employees } = useEmployees();
 
   useEffect(() => {
     if (task) {
@@ -27,15 +30,24 @@ export function EditTaskModal({ open, task, onClose, onUpdate, onDelete, onStatu
       setAssignee(task.assignee || '');
       setStatus(task.status);
       setConfirmDelete(false);
+      // Try to detect department from assignee
+      if (task.assignee) {
+        const match = employees.find(e => `${e.display_name} (${e.employee_number})` === task.assignee);
+        setSelectedDepartment(match?.department || '');
+      } else {
+        setSelectedDepartment('');
+      }
     }
-  }, [task]);
+  }, [task, employees]);
 
   if (!open || !task) return null;
+
+  const filteredEmployees = selectedDepartment ? getByDepartment(selectedDepartment) : [];
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (!title.trim()) return;
-    onUpdate(task.id, { title: title.trim(), description: description.trim(), priority, assignee: assignee.trim() });
+    onUpdate(task.id, { title: title.trim(), description: description.trim(), priority, assignee });
     if (status !== task.status && onStatusChange) {
       onStatusChange(task.id, status);
     }
@@ -72,7 +84,7 @@ export function EditTaskModal({ open, task, onClose, onUpdate, onDelete, onStatu
             <label className="text-sm font-medium text-card-foreground mb-1 block">Description</label>
             <textarea value={description} onChange={e => setDescription(e.target.value)} className="w-full px-3 py-2 rounded-lg border bg-background text-foreground text-sm focus:outline-none focus:ring-2 focus:ring-primary/30 resize-none" rows={3} />
           </div>
-          <div className="grid grid-cols-3 gap-4">
+          <div className="grid grid-cols-2 gap-4">
             <div>
               <label className="text-sm font-medium text-card-foreground mb-1 block">Status</label>
               <select value={status} onChange={e => setStatus(e.target.value as any)} className="w-full px-3 py-2 rounded-lg border bg-background text-foreground text-sm focus:outline-none focus:ring-2 focus:ring-primary/30">
@@ -89,11 +101,35 @@ export function EditTaskModal({ open, task, onClose, onUpdate, onDelete, onStatu
                 <option value="high">High</option>
               </select>
             </div>
+          </div>
+          <div>
+            <label className="text-sm font-medium text-card-foreground mb-1 block">Department</label>
+            <select
+              value={selectedDepartment}
+              onChange={e => { setSelectedDepartment(e.target.value); setAssignee(''); }}
+              className="w-full px-3 py-2 rounded-lg border bg-background text-foreground text-sm focus:outline-none focus:ring-2 focus:ring-primary/30"
+            >
+              <option value="">Select department...</option>
+              {departments.map(d => <option key={d} value={d}>{d}</option>)}
+            </select>
+          </div>
+          {selectedDepartment && (
             <div>
               <label className="text-sm font-medium text-card-foreground mb-1 block">Assignee</label>
-              <input value={assignee} onChange={e => setAssignee(e.target.value)} className="w-full px-3 py-2 rounded-lg border bg-background text-foreground text-sm focus:outline-none focus:ring-2 focus:ring-primary/30" placeholder="Optional" />
+              <select
+                value={assignee}
+                onChange={e => setAssignee(e.target.value)}
+                className="w-full px-3 py-2 rounded-lg border bg-background text-foreground text-sm focus:outline-none focus:ring-2 focus:ring-primary/30"
+              >
+                <option value="">Select assignee...</option>
+                {filteredEmployees.map(emp => (
+                  <option key={emp.id} value={`${emp.display_name} (${emp.employee_number})`}>
+                    {emp.display_name} — {emp.position}
+                  </option>
+                ))}
+              </select>
             </div>
-          </div>
+          )}
           <div className="flex items-center justify-between pt-2">
             <button
               type="button"
