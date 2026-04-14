@@ -206,6 +206,46 @@ const Index = () => {
               )}
             </div>
           )}
+
+          {/* My Department view */}
+          {selectedProjectId === 'dept' && (
+            <div className="px-4 md:px-6 py-6 space-y-5">
+              {loading ? (
+                <div className="flex items-center justify-center py-12">
+                  <div className="w-6 h-6 border-2 border-primary border-t-transparent rounded-full animate-spin" />
+                </div>
+              ) : tasks.length > 0 ? (
+                <>
+                  <div className="bg-card rounded-xl border p-4 md:p-5">
+                    <h2 className="text-sm font-semibold text-card-foreground mb-4 flex items-center gap-2">
+                      <Building2 className="w-4 h-4 text-primary" />
+                      {userDepartment} — Progress
+                    </h2>
+                    <DepartmentProgressBars filterDepartment={userDepartment || undefined} />
+                  </div>
+                  <div className="bg-card rounded-xl border p-4 md:p-5">
+                    <h2 className="text-sm font-semibold text-card-foreground mb-4 flex items-center gap-2">
+                      <PieIcon className="w-4 h-4 text-primary" />
+                      Task Distribution
+                    </h2>
+                    <TaskStatusPieChart tasks={tasks} />
+                  </div>
+                  <KanbanBoard tasks={tasks} loading={loading} onMoveTask={moveTask} onEditTask={setEditingTask} />
+                  <div className="bg-card rounded-xl border p-4 md:p-5">
+                    <h2 className="text-sm font-semibold text-card-foreground mb-4 flex items-center gap-2">
+                      <Table2 className="w-4 h-4 text-primary" />
+                      Timeline — {userDepartment}
+                    </h2>
+                    <TimelineView tasks={tasks} onUpdateDates={updateTaskDates} onUpdateTimes={updateTaskTimes} onEditTask={setEditingTask} />
+                  </div>
+                </>
+              ) : (
+                <div className="flex items-center justify-center py-12 text-sm text-muted-foreground">
+                  {userDepartment ? 'No tasks in your department' : 'No department assigned to your profile'}
+                </div>
+              )}
+            </div>
+          )}
         </div>
       </div>
 
