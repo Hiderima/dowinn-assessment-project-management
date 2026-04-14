@@ -45,7 +45,7 @@ const TASK_LIST_WIDTH = 320;
 const DAY_WIDTH = 44;
 const ROW_HEIGHT = 44;
 
-export function TimelineView({ tasks, onUpdateDates, onUpdateTimes, onEditTask }: Props) {
+export function TimelineView({ tasks, onUpdateDates, onUpdateTimes, onEditTask, projects }: Props) {
   const [viewOffset, setViewOffset] = useState(0);
   const timelineRef = useRef<HTMLDivElement>(null);
   const taskListRef = useRef<HTMLDivElement>(null);
