@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
-import { LayoutDashboard, Table2, PieChart as PieIcon, Plus, LogOut, Menu, X, Moon, Sun, Settings } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
+import { LayoutDashboard, Table2, PieChart as PieIcon, Plus, LogOut, Menu, X, Moon, Sun, Settings, Shield } from 'lucide-react';
 import { ProjectSidebar } from '@/components/ProjectSidebar';
 import { KanbanBoard } from '@/components/KanbanBoard';
 import { AddProjectModal } from '@/components/AddProjectModal';
@@ -15,6 +16,7 @@ import { useAuth } from '@/contexts/AuthContext';
 import { supabase } from '@/integrations/supabase/client';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { useTheme } from '@/hooks/useTheme';
+import { useAdmin } from '@/hooks/useAdmin';
 import type { TaskWithChangelog } from '@/hooks/useProjects';
 
 const Index = () => {
@@ -28,6 +30,8 @@ const Index = () => {
   const [kanbanOpen, setKanbanOpen] = useState(false);
   const isMobile = useIsMobile();
   const { theme, toggle: toggleTheme } = useTheme();
+  const { isAdmin } = useAdmin();
+  const navigate = useNavigate();
   const [displayName, setDisplayName] = useState<string | null>(null);
 
   useEffect(() => {
@@ -108,6 +112,11 @@ const Index = () => {
               </>
             )}
             {/* Dark mode toggle */}
+            {isAdmin && (
+              <button onClick={() => navigate('/admin')} className="p-1.5 rounded-md text-muted-foreground hover:bg-muted hover:text-foreground transition-colors" title="Admin Panel">
+                <Shield className="w-4 h-4" />
+              </button>
+            )}
             <button onClick={toggleTheme} className="p-1.5 rounded-md text-muted-foreground hover:bg-muted hover:text-foreground transition-colors" title="Toggle dark mode">
               {theme === 'dark' ? <Sun className="w-4 h-4" /> : <Moon className="w-4 h-4" />}
             </button>
