@@ -108,12 +108,11 @@ const Index = () => {
 
         <div className="flex-1 overflow-auto">
           {/* Individual project view */}
-          {selectedProjectId !== 'all' && (
+          {selectedProjectId !== 'all' && selectedProjectId !== 'my' && (
             <div className="px-4 md:px-6 pt-4 pb-2">
               <div className="grid grid-cols-1 lg:grid-cols-[1fr_auto] gap-5 items-start">
                 <div className="space-y-4">
                   {tasks.length > 0 && <ProjectProgressBar tasks={tasks} />}
-                  {/* On mobile: show kanban only when toggled open */}
                   {(!isMobile || kanbanOpen) && (
                     <KanbanBoard tasks={tasks} loading={loading} onMoveTask={moveTask} onEditTask={setEditingTask} />
                   )}
@@ -133,7 +132,7 @@ const Index = () => {
           )}
 
           {/* Per-project Timeline */}
-          {selectedProjectId !== 'all' && tasks.length > 0 && (
+          {selectedProjectId !== 'all' && selectedProjectId !== 'my' && tasks.length > 0 && (
             <div className="px-4 md:px-6 pb-6">
               <div className="bg-card rounded-xl border p-4 md:p-5">
                 <h2 className="text-sm font-semibold text-card-foreground mb-4 flex items-center gap-2">
