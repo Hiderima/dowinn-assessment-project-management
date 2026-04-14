@@ -80,7 +80,35 @@ export function useProjects() {
       return;
     }
 
-    let query = supabase
+    if (projectId === 'dept') {
+      const { data: profile } = await supabase
+        .from('profiles')
+        .select('department')
+        .eq('user_id', user?.id || '')
+        .maybeSingle();
+
+      if (!profile?.department) { setTasks([]); setLoading(false); return; }
+
+      const { data, error } = await supabase
+        .from('tasks')
+        .select('*, task_changelog(*)')
+        .eq('department' as any, profile.department)
+        .order('created_at', { ascending: true });
+
+      if (error) { toast.error('Failed to load tasks'); setLoading(false); return; }
+
+      const priorityOrder = { high: 0, medium: 1, low: 2 };
+      const mapped: TaskWithChangelog[] = (data || []).map((t: any) => ({
+        ...t,
+        changelog: (t.task_changelog || []).sort((a: any, b: any) => new Date(a.created_at).getTime() - new Date(b.created_at).getTime()),
+      }));
+      mapped.forEach((t: any) => delete t.task_changelog);
+      mapped.sort((a, b) => priorityOrder[a.priority] - priorityOrder[b.priority]);
+      setTasks(mapped);
+      setLoading(false);
+      return;
+    }
+
       .from('tasks')
       .select('*, task_changelog(*)')
       .order('created_at', { ascending: true });
