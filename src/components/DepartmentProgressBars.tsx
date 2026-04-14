@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useEmployees } from '@/hooks/useEmployees';
 import type { Tables } from '@/integrations/supabase/types';
@@ -13,12 +13,19 @@ export function DepartmentProgressBars() {
   const { employees } = useEmployees();
   const [allTasks, setAllTasks] = useState<DbTask[]>([]);
 
-  const fetchAllTasks = async () => {
+  const fetchAllTasks = useCallback(async () => {
     const { data } = await supabase.from('tasks').select('*');
     setAllTasks(data || []);
-  };
+  }, []);
 
-  useEffect(() => { fetchAllTasks(); }, []);
+  useEffect(() => { fetchAllTasks(); }, [fetchAllTasks]);
+
+  // Listen for custom 'tasks-updated' event (fired by moveTask, etc.)
+  useEffect(() => {
+    const handler = () => fetchAllTasks();
+    window.addEventListener('tasks-updated', handler);
+    return () => window.removeEventListener('tasks-updated', handler);
+  }, [fetchAllTasks]);
 
   // Realtime subscription
   useEffect(() => {
@@ -29,7 +36,7 @@ export function DepartmentProgressBars() {
       })
       .subscribe();
     return () => { supabase.removeChannel(channel); };
-  }, []);
+  }, [fetchAllTasks]);
 
   // Map each employee name to their department
   const nameToDept = new Map<string, string>();
