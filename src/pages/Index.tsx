@@ -77,7 +77,7 @@ const Index = () => {
           </div>
           <div className="flex items-center gap-1.5 md:gap-2">
             {/* Kanban burger toggle (mobile/tablet only) */}
-            {isMobile && selectedProjectId !== 'all' && (
+            {isMobile && selectedProjectId !== 'all' && selectedProjectId !== 'my' && (
               <button
                 onClick={() => setKanbanOpen(v => !v)}
                 className="p-1.5 rounded-md text-muted-foreground hover:bg-muted transition-colors"
@@ -86,7 +86,7 @@ const Index = () => {
                 {kanbanOpen ? <X className="w-4 h-4" /> : <LayoutDashboard className="w-4 h-4" />}
               </button>
             )}
-            {selectedProject && selectedProjectId !== 'all' && (
+            {selectedProject && selectedProjectId !== 'all' && selectedProjectId !== 'my' && (
               <button
                 onClick={() => setShowAddTask(true)}
                 className="flex items-center gap-1.5 px-2 md:px-3 py-1.5 rounded-md text-xs font-medium bg-primary text-primary-foreground hover:bg-primary/90 transition-colors"
