@@ -28,7 +28,7 @@ export function useEmployees() {
     fetch();
   }, []);
 
-  const departments = [...new Set(employees.map(e => e.department).filter(Boolean))] as string[];
+  const departments = [...new Set(employees.map(e => e.department).filter(Boolean).filter(d => d !== 'Administration'))] as string[];
   const getByDepartment = (dept: string) => employees.filter(e => e.department === dept);
 
   return { employees, departments, getByDepartment, loading };
