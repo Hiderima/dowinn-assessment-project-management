@@ -13,7 +13,7 @@ function stripEmployeeNumber(assignee: string) {
   return assignee.replace(/\s*\(.*\)$/, '').trim();
 }
 
-export function DepartmentProgressBars() {
+export function DepartmentProgressBars({ filterDepartment }: { filterDepartment?: string } = {}) {
   const { employees } = useEmployees();
   const [allTasks, setAllTasks] = useState<DepartmentTask[]>([]);
 
@@ -62,7 +62,7 @@ export function DepartmentProgressBars() {
     deptTasks.get(dept)!.push(task);
   });
 
-  const sortedDepts = [...deptTasks.keys()].sort();
+  const sortedDepts = [...deptTasks.keys()].filter(d => !filterDepartment || d === filterDepartment).sort();
 
   if (sortedDepts.length === 0) return null;
 
