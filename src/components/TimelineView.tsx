@@ -43,8 +43,12 @@ const priorityBadge: Record<string, { bg: string; text: string }> = {
 
 const TASK_LIST_WIDTH = 320;
 const DAY_WIDTH = 44;
-const ROW_HEIGHT = 44;
+const ROW_HEIGHT = 52;
 
+function formatAssignee(assignee: string) {
+  // Strip employee number like "Name (123456)" → "Name"
+  return assignee.replace(/\s*\(.*\)$/, '');
+}
 export function TimelineView({ tasks, onUpdateDates, onUpdateTimes, onEditTask, projects }: Props) {
   const [viewOffset, setViewOffset] = useState(0);
   const timelineRef = useRef<HTMLDivElement>(null);
