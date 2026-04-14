@@ -165,7 +165,7 @@ const Index = () => {
                       <Table2 className="w-4 h-4 text-primary" />
                       Timeline — All Projects
                     </h2>
-                    <TimelineView tasks={tasks} onUpdateDates={updateTaskDates} onUpdateTimes={updateTaskTimes} onEditTask={setEditingTask} />
+                    <TimelineView tasks={tasks} onUpdateDates={updateTaskDates} onUpdateTimes={updateTaskTimes} onEditTask={setEditingTask} projects={projects} />
                   </div>
                 </>
               ) : (
