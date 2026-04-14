@@ -14,7 +14,7 @@ interface Props {
 
 export function KanbanColumn({ status, title, colorVar, tasks, onOpenLog, onEdit }: Props) {
   return (
-    <div className="flex-1 min-w-[300px] flex flex-col">
+    <div className="flex-1 min-w-0 md:min-w-[300px] flex flex-col">
       <div className="flex items-center gap-2.5 mb-4 px-1">
         <div className="w-2.5 h-2.5 rounded-full" style={{ backgroundColor: `hsl(${colorVar})` }} />
         <h3 className="text-sm font-semibold text-foreground">{title}</h3>
