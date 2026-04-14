@@ -1,8 +1,11 @@
 import { useState, useRef, useEffect, useCallback, useMemo } from 'react';
 import { format, differenceInDays, addDays, parseISO, startOfDay } from 'date-fns';
-import { ChevronLeft, ChevronRight, User, Clock, Pencil } from 'lucide-react';
+import { ChevronLeft, ChevronRight, User, Clock, Pencil, CalendarIcon } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import type { TaskWithChangelog } from '@/hooks/useProjects';
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
+import { Calendar } from '@/components/ui/calendar';
+import { Button } from '@/components/ui/button';
 
 interface ProjectInfo {
   id: string;
