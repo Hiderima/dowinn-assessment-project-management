@@ -24,6 +24,14 @@ const Index = () => {
   const [kanbanOpen, setKanbanOpen] = useState(false);
   const isMobile = useIsMobile();
   const { theme, toggle: toggleTheme } = useTheme();
+  const [displayName, setDisplayName] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (!user) return;
+    supabase.from('profiles').select('display_name').eq('user_id', user.id).maybeSingle().then(({ data }) => {
+      setDisplayName(data?.display_name || null);
+    });
+  }, [user]);
 
   return (
     <div className="flex h-screen overflow-hidden">
