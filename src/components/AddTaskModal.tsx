@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { X, Plus } from 'lucide-react';
+import { useEmployees } from '@/hooks/useEmployees';
 
 interface Props {
   open: boolean;
@@ -11,17 +12,22 @@ export function AddTaskModal({ open, onClose, onAdd }: Props) {
   const [title, setTitle] = useState('');
   const [description, setDescription] = useState('');
   const [priority, setPriority] = useState<'low' | 'medium' | 'high'>('medium');
+  const [selectedDepartment, setSelectedDepartment] = useState('');
   const [assignee, setAssignee] = useState('');
+  const { departments, getByDepartment } = useEmployees();
 
   if (!open) return null;
+
+  const filteredEmployees = selectedDepartment ? getByDepartment(selectedDepartment) : [];
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (!title.trim()) return;
-    onAdd(title.trim(), description.trim(), priority, assignee.trim());
+    onAdd(title.trim(), description.trim(), priority, assignee);
     setTitle('');
     setDescription('');
     setPriority('medium');
+    setSelectedDepartment('');
     setAssignee('');
     onClose();
   };
@@ -47,20 +53,42 @@ export function AddTaskModal({ open, onClose, onAdd }: Props) {
             <label className="text-sm font-medium text-card-foreground mb-1 block">Description</label>
             <textarea value={description} onChange={e => setDescription(e.target.value)} className="w-full px-3 py-2 rounded-lg border bg-background text-foreground text-sm focus:outline-none focus:ring-2 focus:ring-primary/30 resize-none" rows={3} placeholder="Task description..." />
           </div>
-          <div className="grid grid-cols-2 gap-4">
-            <div>
-              <label className="text-sm font-medium text-card-foreground mb-1 block">Priority</label>
-              <select value={priority} onChange={e => setPriority(e.target.value as any)} className="w-full px-3 py-2 rounded-lg border bg-background text-foreground text-sm focus:outline-none focus:ring-2 focus:ring-primary/30">
-                <option value="low">Low</option>
-                <option value="medium">Medium</option>
-                <option value="high">High</option>
-              </select>
-            </div>
+          <div>
+            <label className="text-sm font-medium text-card-foreground mb-1 block">Priority</label>
+            <select value={priority} onChange={e => setPriority(e.target.value as any)} className="w-full px-3 py-2 rounded-lg border bg-background text-foreground text-sm focus:outline-none focus:ring-2 focus:ring-primary/30">
+              <option value="low">Low</option>
+              <option value="medium">Medium</option>
+              <option value="high">High</option>
+            </select>
+          </div>
+          <div>
+            <label className="text-sm font-medium text-card-foreground mb-1 block">Department</label>
+            <select
+              value={selectedDepartment}
+              onChange={e => { setSelectedDepartment(e.target.value); setAssignee(''); }}
+              className="w-full px-3 py-2 rounded-lg border bg-background text-foreground text-sm focus:outline-none focus:ring-2 focus:ring-primary/30"
+            >
+              <option value="">Select department...</option>
+              {departments.map(d => <option key={d} value={d}>{d}</option>)}
+            </select>
+          </div>
+          {selectedDepartment && (
             <div>
               <label className="text-sm font-medium text-card-foreground mb-1 block">Assignee</label>
-              <input value={assignee} onChange={e => setAssignee(e.target.value)} className="w-full px-3 py-2 rounded-lg border bg-background text-foreground text-sm focus:outline-none focus:ring-2 focus:ring-primary/30" placeholder="Optional" />
+              <select
+                value={assignee}
+                onChange={e => setAssignee(e.target.value)}
+                className="w-full px-3 py-2 rounded-lg border bg-background text-foreground text-sm focus:outline-none focus:ring-2 focus:ring-primary/30"
+              >
+                <option value="">Select assignee...</option>
+                {filteredEmployees.map(emp => (
+                  <option key={emp.id} value={`${emp.display_name} (${emp.employee_number})`}>
+                    {emp.display_name} — {emp.position}
+                  </option>
+                ))}
+              </select>
             </div>
-          </div>
+          )}
           <div className="flex justify-end gap-2 pt-2">
             <button type="button" onClick={onClose} className="px-4 py-2 text-sm rounded-lg text-muted-foreground hover:bg-muted transition-colors">Cancel</button>
             <button type="submit" disabled={!title.trim()} className="px-4 py-2 text-sm rounded-lg bg-primary text-primary-foreground font-medium hover:bg-primary/90 transition-colors disabled:opacity-40">Create Task</button>
