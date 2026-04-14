@@ -49,6 +49,37 @@ export function useProjects() {
     if (!projectId) { setTasks([]); return; }
     setLoading(true);
 
+    if (projectId === 'my') {
+      // Fetch current user's profile to get display_name
+      const { data: profile } = await supabase
+        .from('profiles')
+        .select('display_name, employee_number')
+        .eq('user_id', user?.id || '')
+        .maybeSingle();
+
+      if (!profile) { setTasks([]); setLoading(false); return; }
+
+      // Find tasks where assignee contains this user's name
+      const { data, error } = await supabase
+        .from('tasks')
+        .select('*, task_changelog(*)')
+        .or(`assignee.ilike.%${profile.display_name}%,assignee.ilike.%${profile.employee_number}%`)
+        .order('created_at', { ascending: true });
+
+      if (error) { toast.error('Failed to load tasks'); setLoading(false); return; }
+
+      const priorityOrder = { high: 0, medium: 1, low: 2 };
+      const mapped: TaskWithChangelog[] = (data || []).map((t: any) => ({
+        ...t,
+        changelog: (t.task_changelog || []).sort((a: any, b: any) => new Date(a.created_at).getTime() - new Date(b.created_at).getTime()),
+      }));
+      mapped.forEach((t: any) => delete t.task_changelog);
+      mapped.sort((a, b) => priorityOrder[a.priority] - priorityOrder[b.priority]);
+      setTasks(mapped);
+      setLoading(false);
+      return;
+    }
+
     let query = supabase
       .from('tasks')
       .select('*, task_changelog(*)')
