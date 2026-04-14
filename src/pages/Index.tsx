@@ -68,15 +68,16 @@ const Index = () => {
             <LayoutDashboard className="w-5 h-5 text-primary hidden md:block" />
             <div>
               <h1 className="text-sm font-semibold text-card-foreground">
-                {selectedProjectId === 'all' ? 'All Projects' : selectedProject?.name || 'Select a project'}
+                {selectedProjectId === 'all' ? 'All Projects' : selectedProjectId === 'my' ? 'My Projects' : selectedProject?.name || 'Select a project'}
               </h1>
-              {selectedProjectId !== 'all' && selectedProject && <p className="text-xs text-muted-foreground hidden md:block">{selectedProject.description}</p>}
+              {selectedProjectId !== 'all' && selectedProjectId !== 'my' && selectedProject && <p className="text-xs text-muted-foreground hidden md:block">{selectedProject.description}</p>}
               {selectedProjectId === 'all' && <p className="text-xs text-muted-foreground hidden md:block">Overview of all projects</p>}
+              {selectedProjectId === 'my' && <p className="text-xs text-muted-foreground hidden md:block">Projects where you are assigned</p>}
             </div>
           </div>
           <div className="flex items-center gap-1.5 md:gap-2">
             {/* Kanban burger toggle (mobile/tablet only) */}
-            {isMobile && selectedProjectId !== 'all' && (
+            {isMobile && selectedProjectId !== 'all' && selectedProjectId !== 'my' && (
               <button
                 onClick={() => setKanbanOpen(v => !v)}
                 className="p-1.5 rounded-md text-muted-foreground hover:bg-muted transition-colors"
@@ -85,7 +86,7 @@ const Index = () => {
                 {kanbanOpen ? <X className="w-4 h-4" /> : <LayoutDashboard className="w-4 h-4" />}
               </button>
             )}
-            {selectedProject && selectedProjectId !== 'all' && (
+            {selectedProject && selectedProjectId !== 'all' && selectedProjectId !== 'my' && (
               <button
                 onClick={() => setShowAddTask(true)}
                 className="flex items-center gap-1.5 px-2 md:px-3 py-1.5 rounded-md text-xs font-medium bg-primary text-primary-foreground hover:bg-primary/90 transition-colors"
@@ -107,12 +108,11 @@ const Index = () => {
 
         <div className="flex-1 overflow-auto">
           {/* Individual project view */}
-          {selectedProjectId !== 'all' && (
+          {selectedProjectId !== 'all' && selectedProjectId !== 'my' && (
             <div className="px-4 md:px-6 pt-4 pb-2">
               <div className="grid grid-cols-1 lg:grid-cols-[1fr_auto] gap-5 items-start">
                 <div className="space-y-4">
                   {tasks.length > 0 && <ProjectProgressBar tasks={tasks} />}
-                  {/* On mobile: show kanban only when toggled open */}
                   {(!isMobile || kanbanOpen) && (
                     <KanbanBoard tasks={tasks} loading={loading} onMoveTask={moveTask} onEditTask={setEditingTask} />
                   )}
@@ -132,7 +132,7 @@ const Index = () => {
           )}
 
           {/* Per-project Timeline */}
-          {selectedProjectId !== 'all' && tasks.length > 0 && (
+          {selectedProjectId !== 'all' && selectedProjectId !== 'my' && tasks.length > 0 && (
             <div className="px-4 md:px-6 pb-6">
               <div className="bg-card rounded-xl border p-4 md:p-5">
                 <h2 className="text-sm font-semibold text-card-foreground mb-4 flex items-center gap-2">
@@ -144,8 +144,8 @@ const Index = () => {
             </div>
           )}
 
-          {/* All Projects view */}
-          {selectedProjectId === 'all' && (
+          {/* All/My Projects overview */}
+          {(selectedProjectId === 'all' || selectedProjectId === 'my') && (
             <div className="px-4 md:px-6 py-6 space-y-5">
               {loading ? (
                 <div className="flex items-center justify-center py-12">
@@ -156,20 +156,22 @@ const Index = () => {
                   <div className="bg-card rounded-xl border p-4 md:p-5">
                     <h2 className="text-sm font-semibold text-card-foreground mb-4 flex items-center gap-2">
                       <PieIcon className="w-4 h-4 text-primary" />
-                      Overall Task Distribution
+                      {selectedProjectId === 'my' ? 'My Task Distribution' : 'Overall Task Distribution'}
                     </h2>
                     <TaskStatusPieChart tasks={tasks} projects={projects} />
                   </div>
                   <div className="bg-card rounded-xl border p-4 md:p-5">
                     <h2 className="text-sm font-semibold text-card-foreground mb-4 flex items-center gap-2">
                       <Table2 className="w-4 h-4 text-primary" />
-                      Timeline — All Projects
+                      {selectedProjectId === 'my' ? 'Timeline — My Projects' : 'Timeline — All Projects'}
                     </h2>
                     <TimelineView tasks={tasks} onUpdateDates={updateTaskDates} onUpdateTimes={updateTaskTimes} onEditTask={setEditingTask} projects={projects} />
                   </div>
                 </>
               ) : (
-                <div className="flex items-center justify-center py-12 text-sm text-muted-foreground">No tasks across any project</div>
+                <div className="flex items-center justify-center py-12 text-sm text-muted-foreground">
+                  {selectedProjectId === 'my' ? 'No tasks assigned to you' : 'No tasks across any project'}
+                </div>
               )}
             </div>
           )}
