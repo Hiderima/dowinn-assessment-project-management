@@ -226,9 +226,9 @@ const Index = () => {
                   <div className="bg-card rounded-xl border p-4 md:p-5">
                     <h2 className="text-sm font-semibold text-card-foreground mb-4 flex items-center gap-2">
                       <PieIcon className="w-4 h-4 text-primary" />
-                      Task Distribution
+                      Task Distribution — Per Project
                     </h2>
-                    <TaskStatusPieChart tasks={tasks} />
+                    <TaskStatusPieChart tasks={tasks} projects={projects} />
                   </div>
                   <KanbanBoard tasks={tasks} loading={loading} onMoveTask={moveTask} onEditTask={setEditingTask} />
                   <div className="bg-card rounded-xl border p-4 md:p-5">
