@@ -1,16 +1,35 @@
+import { useState, useEffect } from 'react';
+import { supabase } from '@/integrations/supabase/client';
 import { useEmployees } from '@/hooks/useEmployees';
-import type { TaskWithChangelog } from '@/hooks/useProjects';
+import type { Tables } from '@/integrations/supabase/types';
 
-interface Props {
-  tasks: TaskWithChangelog[];
-}
+type DbTask = Tables<'tasks'>;
 
 function stripEmployeeNumber(assignee: string) {
   return assignee.replace(/\s*\(.*\)$/, '').trim();
 }
 
-export function DepartmentProgressBars({ tasks }: Props) {
-  const { employees, departments } = useEmployees();
+export function DepartmentProgressBars() {
+  const { employees } = useEmployees();
+  const [allTasks, setAllTasks] = useState<DbTask[]>([]);
+
+  const fetchAllTasks = async () => {
+    const { data } = await supabase.from('tasks').select('*');
+    setAllTasks(data || []);
+  };
+
+  useEffect(() => { fetchAllTasks(); }, []);
+
+  // Realtime subscription
+  useEffect(() => {
+    const channel = supabase
+      .channel('dept-tasks-realtime')
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'tasks' }, () => {
+        fetchAllTasks();
+      })
+      .subscribe();
+    return () => { supabase.removeChannel(channel); };
+  }, []);
 
   // Map each employee name to their department
   const nameToDept = new Map<string, string>();
@@ -21,8 +40,8 @@ export function DepartmentProgressBars({ tasks }: Props) {
   });
 
   // Group tasks by department
-  const deptTasks = new Map<string, TaskWithChangelog[]>();
-  tasks.forEach(task => {
+  const deptTasks = new Map<string, DbTask[]>();
+  allTasks.forEach(task => {
     if (!task.assignee) return;
     const name = stripEmployeeNumber(task.assignee).toLowerCase();
     const dept = nameToDept.get(name);
@@ -31,7 +50,6 @@ export function DepartmentProgressBars({ tasks }: Props) {
     deptTasks.get(dept)!.push(task);
   });
 
-  // Sort departments alphabetically
   const sortedDepts = [...deptTasks.keys()].sort();
 
   if (sortedDepts.length === 0) return null;
