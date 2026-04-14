@@ -9,10 +9,12 @@ type DepartmentTask = {
   department: string | null;
 };
 
+/** Strip employee number suffix: "Name (123)" → "Name" */
 function stripEmployeeNumber(assignee: string) {
   return assignee.replace(/\s*\(.*\)$/, '').trim();
 }
 
+/** Shows stacked progress bars per department. Optionally filtered to a single department. */
 export function DepartmentProgressBars({ filterDepartment }: { filterDepartment?: string } = {}) {
   const { employees } = useEmployees();
   const [allTasks, setAllTasks] = useState<DepartmentTask[]>([]);
@@ -22,48 +24,41 @@ export function DepartmentProgressBars({ filterDepartment }: { filterDepartment?
     setAllTasks((data as DepartmentTask[]) || []);
   }, []);
 
+  // Initial fetch + event-driven refresh
   useEffect(() => { fetchAllTasks(); }, [fetchAllTasks]);
-
   useEffect(() => {
     const handler = () => fetchAllTasks();
     window.addEventListener('tasks-updated', handler);
     return () => window.removeEventListener('tasks-updated', handler);
   }, [fetchAllTasks]);
 
+  // Realtime subscription
   useEffect(() => {
     const channel = supabase
       .channel('dept-tasks-realtime')
-      .on('postgres_changes', { event: '*', schema: 'public', table: 'tasks' }, () => {
-        fetchAllTasks();
-      })
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'tasks' }, () => fetchAllTasks())
       .subscribe();
-
-    return () => {
-      supabase.removeChannel(channel);
-    };
+    return () => { supabase.removeChannel(channel); };
   }, [fetchAllTasks]);
 
+  // Map employee names → departments for tasks without explicit department
   const nameToDept = new Map<string, string>();
-  employees.forEach((employee) => {
-    if (employee.display_name && employee.department) {
-      nameToDept.set(employee.display_name.toLowerCase(), employee.department);
+  employees.forEach((emp) => {
+    if (emp.display_name && emp.department) {
+      nameToDept.set(emp.display_name.toLowerCase(), emp.department);
     }
   });
 
+  // Group tasks by department
   const deptTasks = new Map<string, DepartmentTask[]>();
   allTasks.forEach((task) => {
     const dept = task.department || (task.assignee ? nameToDept.get(stripEmployeeNumber(task.assignee).toLowerCase()) || null : null);
     if (!dept) return;
-
-    if (!deptTasks.has(dept)) {
-      deptTasks.set(dept, []);
-    }
-
+    if (!deptTasks.has(dept)) deptTasks.set(dept, []);
     deptTasks.get(dept)!.push(task);
   });
 
   const sortedDepts = [...deptTasks.keys()].filter(d => !filterDepartment || d === filterDepartment).sort();
-
   if (sortedDepts.length === 0) return null;
 
   return (
@@ -71,8 +66,8 @@ export function DepartmentProgressBars({ filterDepartment }: { filterDepartment?
       {sortedDepts.map((dept) => {
         const dt = deptTasks.get(dept)!;
         const total = dt.length;
-        const done = dt.filter((task) => task.status === 'done').length;
-        const inProgress = dt.filter((task) => task.status === 'in_progress').length;
+        const done = dt.filter(t => t.status === 'done').length;
+        const inProgress = dt.filter(t => t.status === 'in_progress').length;
         const todo = total - done - inProgress;
         const donePercent = (done / total) * 100;
         const inProgressPercent = (inProgress / total) * 100;
@@ -88,28 +83,14 @@ export function DepartmentProgressBars({ filterDepartment }: { filterDepartment?
               </div>
             </div>
             <div className="h-2 bg-muted rounded-full overflow-hidden flex">
-              <div
-                className="h-full rounded-l-full transition-all duration-500"
-                style={{ width: `${donePercent}%`, background: 'hsl(var(--column-done))' }}
-              />
-              <div
-                className="h-full transition-all duration-500"
-                style={{ width: `${inProgressPercent}%`, background: 'hsl(var(--column-progress))' }}
-              />
+              <div className="h-full rounded-l-full transition-all duration-500" style={{ width: `${donePercent}%`, background: 'hsl(var(--column-done))' }} />
+              <div className="h-full transition-all duration-500" style={{ width: `${inProgressPercent}%`, background: 'hsl(var(--column-progress))' }} />
             </div>
+            {/* Legend */}
             <div className="flex gap-3 text-[10px] text-muted-foreground">
-              <span className="flex items-center gap-1">
-                <span className="w-1.5 h-1.5 rounded-full" style={{ background: 'hsl(var(--column-done))' }} />
-                Done {done}
-              </span>
-              <span className="flex items-center gap-1">
-                <span className="w-1.5 h-1.5 rounded-full" style={{ background: 'hsl(var(--column-progress))' }} />
-                In Progress {inProgress}
-              </span>
-              <span className="flex items-center gap-1">
-                <span className="w-1.5 h-1.5 rounded-full" style={{ background: 'hsl(var(--column-todo))' }} />
-                Todo {todo}
-              </span>
+              <span className="flex items-center gap-1"><span className="w-1.5 h-1.5 rounded-full" style={{ background: 'hsl(var(--column-done))' }} /> Done {done}</span>
+              <span className="flex items-center gap-1"><span className="w-1.5 h-1.5 rounded-full" style={{ background: 'hsl(var(--column-progress))' }} /> In Progress {inProgress}</span>
+              <span className="flex items-center gap-1"><span className="w-1.5 h-1.5 rounded-full" style={{ background: 'hsl(var(--column-todo))' }} /> Todo {todo}</span>
             </div>
           </div>
         );

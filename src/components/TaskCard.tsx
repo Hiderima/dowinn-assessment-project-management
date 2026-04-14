@@ -3,6 +3,7 @@ import { Clock, MessageSquare, User, Pencil } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import type { TaskWithChangelog } from '@/hooks/useProjects';
 
+/* Priority badge styles mapped to semantic tokens */
 const priorityStyles: Record<string, string> = {
   high: 'bg-destructive/10 text-destructive',
   medium: 'bg-accent text-accent-foreground',
@@ -16,6 +17,7 @@ interface Props {
   onEdit?: (task: TaskWithChangelog) => void;
 }
 
+/** Draggable task card shown inside a Kanban column */
 export function TaskCard({ task, index, onOpenLog, onEdit }: Props) {
   return (
     <Draggable draggableId={task.id} index={index}>
@@ -29,6 +31,7 @@ export function TaskCard({ task, index, onOpenLog, onEdit }: Props) {
             snapshot.isDragging && 'shadow-lg ring-2 ring-primary/20'
           )}
         >
+          {/* Title + priority badge */}
           <div className="flex items-start justify-between gap-2 mb-2">
             <h4 className="text-sm font-medium text-card-foreground leading-snug">{task.title}</h4>
             <span className={cn('text-[10px] font-semibold uppercase px-1.5 py-0.5 rounded', priorityStyles[task.priority])}>
@@ -36,6 +39,8 @@ export function TaskCard({ task, index, onOpenLog, onEdit }: Props) {
             </span>
           </div>
           <p className="text-xs text-muted-foreground line-clamp-2 mb-3">{task.description}</p>
+
+          {/* Footer: assignee, date, edit & changelog buttons */}
           <div className="flex items-center justify-between text-muted-foreground">
             <div className="flex items-center gap-3">
               {task.assignee && (
@@ -49,19 +54,11 @@ export function TaskCard({ task, index, onOpenLog, onEdit }: Props) {
             </div>
             <div className="flex items-center gap-2">
               {onEdit && (
-                <button
-                  onClick={(e) => { e.stopPropagation(); onEdit(task); }}
-                  className="flex items-center gap-1 text-xs hover:text-primary transition-colors"
-                  title="Edit task"
-                >
+                <button onClick={(e) => { e.stopPropagation(); onEdit(task); }} className="flex items-center gap-1 text-xs hover:text-primary transition-colors" title="Edit task">
                   <Pencil className="w-3 h-3" />
                 </button>
               )}
-              <button
-                onClick={(e) => { e.stopPropagation(); onOpenLog(task); }}
-                className="flex items-center gap-1 text-xs hover:text-primary transition-colors"
-                title="View change log"
-              >
+              <button onClick={(e) => { e.stopPropagation(); onOpenLog(task); }} className="flex items-center gap-1 text-xs hover:text-primary transition-colors" title="View change log">
                 <MessageSquare className="w-3 h-3" />
                 {task.changelog.length}
               </button>

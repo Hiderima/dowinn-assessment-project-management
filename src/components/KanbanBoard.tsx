@@ -4,6 +4,7 @@ import { KanbanColumn } from './KanbanColumn';
 import { ChangeLogModal } from './ChangeLogModal';
 import type { TaskWithChangelog } from '@/hooks/useProjects';
 
+/* Column definitions with semantic color variables */
 const COLUMNS = [
   { id: 'todo' as const, title: 'Todo', colorVar: 'var(--column-todo)' },
   { id: 'in_progress' as const, title: 'In Progress', colorVar: 'var(--column-progress)' },
@@ -17,6 +18,7 @@ interface Props {
   onEditTask?: (task: TaskWithChangelog) => void;
 }
 
+/** Drag-and-drop Kanban board with three status columns */
 export function KanbanBoard({ tasks, loading, onMoveTask, onEditTask }: Props) {
   const [logTask, setLogTask] = useState<TaskWithChangelog | null>(null);
 
