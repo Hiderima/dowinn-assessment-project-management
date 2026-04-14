@@ -133,6 +133,7 @@ export function useProjects() {
     });
 
     fetchTasks(selectedProjectId);
+    window.dispatchEvent(new Event('tasks-updated'));
   }, [selectedProjectId, fetchTasks]);
 
   const updateTaskDates = useCallback(async (taskId: string, startDate: string, endDate: string) => {
