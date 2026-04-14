@@ -199,6 +199,13 @@ const Index = () => {
 
       <AddProjectModal open={showAddProject} onClose={() => setShowAddProject(false)} onAdd={addProject} />
       <AddTaskModal open={showAddTask} onClose={() => setShowAddTask(false)} onAdd={addTask} />
+      <EditProjectModal
+        open={showEditProject}
+        project={selectedProject ? { id: selectedProject.id, name: selectedProject.name, description: selectedProject.description } : null}
+        onClose={() => setShowEditProject(false)}
+        onUpdate={updateProject}
+        onDelete={deleteProject}
+      />
       <EditTaskModal
         open={!!editingTask}
         task={editingTask}
