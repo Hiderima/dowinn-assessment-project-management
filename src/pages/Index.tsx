@@ -8,6 +8,7 @@ import { EditTaskModal } from '@/components/EditTaskModal';
 import { ProjectProgressBar } from '@/components/ProjectProgressBar';
 import { TaskStatusPieChart } from '@/components/TaskStatusPieChart';
 import { TimelineView } from '@/components/TimelineView';
+import { DepartmentProgressBars } from '@/components/DepartmentProgressBars';
 import { useProjects } from '@/hooks/useProjects';
 import { useAuth } from '@/contexts/AuthContext';
 import { supabase } from '@/integrations/supabase/client';
@@ -159,6 +160,13 @@ const Index = () => {
                       {selectedProjectId === 'my' ? 'My Task Distribution' : 'Overall Task Distribution'}
                     </h2>
                     <TaskStatusPieChart tasks={tasks} projects={projects} />
+                  </div>
+                  <div className="bg-card rounded-xl border p-4 md:p-5">
+                    <h2 className="text-sm font-semibold text-card-foreground mb-4 flex items-center gap-2">
+                      <PieIcon className="w-4 h-4 text-primary" />
+                      Department Progress
+                    </h2>
+                    <DepartmentProgressBars tasks={tasks} />
                   </div>
                   <div className="bg-card rounded-xl border p-4 md:p-5">
                     <h2 className="text-sm font-semibold text-card-foreground mb-4 flex items-center gap-2">
