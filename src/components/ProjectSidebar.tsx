@@ -11,9 +11,33 @@ interface Props {
   apiAvailable: boolean;
 }
 
+/** Reusable sidebar nav button */
+function SidebarButton({ selected, onClick, icon: Icon, label, badge }: {
+  selected: boolean; onClick: () => void; icon: React.ElementType; label: string; badge?: React.ReactNode;
+}) {
+  return (
+    <button
+      onClick={onClick}
+      className={cn(
+        'w-full flex items-center gap-2.5 px-3 py-2 rounded-md text-sm transition-colors text-left',
+        selected
+          ? 'bg-sidebar-accent text-sidebar-accent-foreground font-medium'
+          : 'text-sidebar-foreground hover:bg-sidebar-accent/50 hover:text-sidebar-accent-foreground'
+      )}
+    >
+      <Icon className="w-3.5 h-3.5" />
+      <span className="truncate">{label}</span>
+      {badge && <span className="ml-auto text-xs opacity-50">{badge}</span>}
+    </button>
+  );
+}
+
 export function ProjectSidebar({ projects, selectedId, onSelect, onSeed, onAddProject, apiAvailable }: Props) {
+  const totalTasks = projects.reduce((s, p) => s + p.taskCount, 0);
+
   return (
     <aside className="w-64 flex-shrink-0 bg-sidebar text-sidebar-foreground flex flex-col h-screen border-r border-sidebar-border">
+      {/* Logo */}
       <div className="p-5 border-b border-sidebar-border">
         <div className="flex items-center gap-2.5">
           <div className="w-8 h-8 rounded-lg bg-sidebar-primary flex items-center justify-center">
@@ -23,6 +47,7 @@ export function ProjectSidebar({ projects, selectedId, onSelect, onSeed, onAddPr
         </div>
       </div>
 
+      {/* Navigation */}
       <div className="flex-1 overflow-y-auto py-4">
         <div className="px-5 flex items-center justify-between mb-2">
           <p className="text-xs font-medium uppercase tracking-wider text-sidebar-foreground/50">Projects</p>
@@ -31,43 +56,12 @@ export function ProjectSidebar({ projects, selectedId, onSelect, onSeed, onAddPr
           </button>
         </div>
         <nav className="space-y-0.5 px-2">
-          <button
-            onClick={() => onSelect('all')}
-            className={cn(
-              'w-full flex items-center gap-2.5 px-3 py-2 rounded-md text-sm transition-colors text-left',
-              selectedId === 'all'
-                ? 'bg-sidebar-accent text-sidebar-accent-foreground font-medium'
-                : 'text-sidebar-foreground hover:bg-sidebar-accent/50 hover:text-sidebar-accent-foreground'
-            )}
-          >
-            <LayoutGrid className="w-3.5 h-3.5" />
-            <span>All Projects</span>
-            <span className="ml-auto text-xs opacity-50">{projects.reduce((s, p) => s + p.taskCount, 0)}</span>
-          </button>
-          <button
-            onClick={() => onSelect('my')}
-            className={cn(
-              'w-full flex items-center gap-2.5 px-3 py-2 rounded-md text-sm transition-colors text-left',
-              selectedId === 'my'
-                ? 'bg-sidebar-accent text-sidebar-accent-foreground font-medium'
-                : 'text-sidebar-foreground hover:bg-sidebar-accent/50 hover:text-sidebar-accent-foreground'
-            )}
-          >
-            <UserCircle className="w-3.5 h-3.5" />
-            <span>My Projects</span>
-          </button>
-          <button
-            onClick={() => onSelect('dept')}
-            className={cn(
-              'w-full flex items-center gap-2.5 px-3 py-2 rounded-md text-sm transition-colors text-left',
-              selectedId === 'dept'
-                ? 'bg-sidebar-accent text-sidebar-accent-foreground font-medium'
-                : 'text-sidebar-foreground hover:bg-sidebar-accent/50 hover:text-sidebar-accent-foreground'
-            )}
-          >
-            <Building2 className="w-3.5 h-3.5" />
-            <span>My Department</span>
-          </button>
+          {/* Virtual views */}
+          <SidebarButton selected={selectedId === 'all'} onClick={() => onSelect('all')} icon={LayoutGrid} label="All Projects" badge={totalTasks} />
+          <SidebarButton selected={selectedId === 'my'} onClick={() => onSelect('my')} icon={UserCircle} label="My Projects" />
+          <SidebarButton selected={selectedId === 'dept'} onClick={() => onSelect('dept')} icon={Building2} label="My Department" />
+
+          {/* Individual projects */}
           {projects.map(p => (
             <button
               key={p.id}
@@ -87,14 +81,12 @@ export function ProjectSidebar({ projects, selectedId, onSelect, onSeed, onAddPr
         </nav>
       </div>
 
+      {/* Footer actions */}
       <div className="p-3 border-t border-sidebar-border space-y-1">
         {!apiAvailable && (
           <p className="px-3 py-1 text-xs text-sidebar-foreground/40">Demo mode — API offline</p>
         )}
-        <button
-          onClick={onSeed}
-          className="w-full flex items-center gap-2.5 px-3 py-2 rounded-md text-sm text-sidebar-foreground hover:bg-sidebar-accent/50 hover:text-sidebar-accent-foreground transition-colors"
-        >
+        <button onClick={onSeed} className="w-full flex items-center gap-2.5 px-3 py-2 rounded-md text-sm text-sidebar-foreground hover:bg-sidebar-accent/50 hover:text-sidebar-accent-foreground transition-colors">
           <Database className="w-4 h-4" />
           Seed Database
         </button>

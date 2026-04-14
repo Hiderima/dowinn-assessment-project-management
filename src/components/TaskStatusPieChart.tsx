@@ -6,29 +6,30 @@ interface Props {
   projects?: ProjectWithCount[];
 }
 
+/* Status color config used for pie slices and breakdown table */
 const STATUS_CONFIG = [
   { key: 'todo', label: 'Todo', color: 'hsl(220, 72%, 50%)' },
   { key: 'in_progress', label: 'In Progress', color: 'hsl(35, 92%, 50%)' },
   { key: 'done', label: 'Done', color: 'hsl(145, 63%, 42%)' },
 ];
 
+/** Pie chart with optional per-project breakdown table */
 export function TaskStatusPieChart({ tasks, projects }: Props) {
   if (tasks.length === 0) return <div className="flex items-center justify-center h-48 text-sm text-muted-foreground">No tasks yet</div>;
 
-  const data = STATUS_CONFIG.map(s => ({ name: s.label, value: tasks.filter(t => t.status === s.key).length, color: s.color })).filter(d => d.value > 0);
+  const data = STATUS_CONFIG.map(s => ({
+    name: s.label,
+    value: tasks.filter(t => t.status === s.key).length,
+    color: s.color,
+  })).filter(d => d.value > 0);
 
-  // Per-project breakdown (only when projects are provided, i.e. "All Projects" view)
+  // Per-project breakdown (shown in "All Projects" and "My Department" views)
   const projectBreakdown = projects?.map(p => {
-    const projectTasks = tasks.filter(t => t.project_id === p.id);
-    return {
-      name: p.name,
-      todo: projectTasks.filter(t => t.status === 'todo').length,
-      inProgress: projectTasks.filter(t => t.status === 'in_progress').length,
-      done: projectTasks.filter(t => t.status === 'done').length,
-      total: projectTasks.length,
-    };
+    const pt = tasks.filter(t => t.project_id === p.id);
+    return { name: p.name, todo: pt.filter(t => t.status === 'todo').length, inProgress: pt.filter(t => t.status === 'in_progress').length, done: pt.filter(t => t.status === 'done').length, total: pt.length };
   }).filter(p => p.total > 0);
 
+  /* Pie chart section */
   const chartSection = (
     <div className="flex flex-wrap items-center gap-6">
       <div className="w-56 h-56 shrink-0">
@@ -41,6 +42,7 @@ export function TaskStatusPieChart({ tasks, projects }: Props) {
           </PieChart>
         </ResponsiveContainer>
       </div>
+      {/* Legend */}
       <div className="space-y-2">
         {data.map(d => (
           <div key={d.name} className="flex items-center gap-2 text-xs">
@@ -54,6 +56,7 @@ export function TaskStatusPieChart({ tasks, projects }: Props) {
     </div>
   );
 
+  /* Per-project breakdown table */
   const breakdownSection = projectBreakdown && projectBreakdown.length > 0 ? (
     <div className="flex-1 min-w-0">
       <h3 className="text-xs font-semibold text-card-foreground mb-2 uppercase tracking-wider">Per Project Breakdown</h3>
@@ -84,6 +87,7 @@ export function TaskStatusPieChart({ tasks, projects }: Props) {
     </div>
   ) : null;
 
+  // Side-by-side layout when breakdown is available
   if (projects && breakdownSection) {
     return (
       <div className="flex flex-col lg:flex-row gap-5 items-start">

@@ -8,6 +8,7 @@ interface Props {
   onAdd: (title: string, description: string, priority: 'low' | 'medium' | 'high', assignee: string, department: string) => void;
 }
 
+/** Modal form for creating a new task with department & assignee selection */
 export function AddTaskModal({ open, onClose, onAdd }: Props) {
   const [title, setTitle] = useState('');
   const [description, setDescription] = useState('');
@@ -24,17 +25,14 @@ export function AddTaskModal({ open, onClose, onAdd }: Props) {
     e.preventDefault();
     if (!title.trim() || !selectedDepartment) return;
     onAdd(title.trim(), description.trim(), priority, assignee, selectedDepartment);
-    setTitle('');
-    setDescription('');
-    setPriority('medium');
-    setSelectedDepartment('');
-    setAssignee('');
+    setTitle(''); setDescription(''); setPriority('medium'); setSelectedDepartment(''); setAssignee('');
     onClose();
   };
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50" onClick={onClose}>
       <div className="bg-card rounded-xl border shadow-2xl w-full max-w-md mx-4" onClick={e => e.stopPropagation()}>
+        {/* Header */}
         <div className="flex items-center justify-between p-5 border-b">
           <div className="flex items-center gap-2">
             <Plus className="w-5 h-5 text-primary" />
@@ -44,6 +42,7 @@ export function AddTaskModal({ open, onClose, onAdd }: Props) {
             <X className="w-4 h-4" />
           </button>
         </div>
+
         <form onSubmit={handleSubmit} className="p-5 space-y-4">
           <div>
             <label className="text-sm font-medium text-card-foreground mb-1 block">Title</label>
@@ -63,24 +62,16 @@ export function AddTaskModal({ open, onClose, onAdd }: Props) {
           </div>
           <div>
             <label className="text-sm font-medium text-card-foreground mb-1 block">Department</label>
-            <select
-              value={selectedDepartment}
-              onChange={e => { setSelectedDepartment(e.target.value); setAssignee(''); }}
-              className="w-full px-3 py-2 rounded-lg border bg-background text-foreground text-sm focus:outline-none focus:ring-2 focus:ring-primary/30"
-              required
-            >
+            <select value={selectedDepartment} onChange={e => { setSelectedDepartment(e.target.value); setAssignee(''); }} className="w-full px-3 py-2 rounded-lg border bg-background text-foreground text-sm focus:outline-none focus:ring-2 focus:ring-primary/30" required>
               <option value="">Select department...</option>
               {departments.map(d => <option key={d} value={d}>{d}</option>)}
             </select>
           </div>
+          {/* Assignee dropdown appears after department is selected */}
           {selectedDepartment && (
             <div>
               <label className="text-sm font-medium text-card-foreground mb-1 block">Assignee</label>
-              <select
-                value={assignee}
-                onChange={e => setAssignee(e.target.value)}
-                className="w-full px-3 py-2 rounded-lg border bg-background text-foreground text-sm focus:outline-none focus:ring-2 focus:ring-primary/30"
-              >
+              <select value={assignee} onChange={e => setAssignee(e.target.value)} className="w-full px-3 py-2 rounded-lg border bg-background text-foreground text-sm focus:outline-none focus:ring-2 focus:ring-primary/30">
                 <option value="">Select assignee...</option>
                 {filteredEmployees.map(emp => (
                   <option key={emp.id} value={`${emp.display_name} (${emp.employee_number})`}>

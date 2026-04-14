@@ -16,6 +16,22 @@ export interface ProjectWithCount extends DbProject {
   taskCount: number;
 }
 
+/* Priority sort order: high → medium → low */
+const priorityOrder: Record<string, number> = { high: 0, medium: 1, low: 2 };
+
+/** Map raw Supabase task rows (with nested task_changelog) into sorted TaskWithChangelog[] */
+function mapAndSortTasks(data: any[]): TaskWithChangelog[] {
+  const mapped: TaskWithChangelog[] = (data || []).map((t: any) => ({
+    ...t,
+    changelog: (t.task_changelog || []).sort(
+      (a: any, b: any) => new Date(a.created_at).getTime() - new Date(b.created_at).getTime()
+    ),
+  }));
+  mapped.forEach((t: any) => delete t.task_changelog);
+  mapped.sort((a, b) => priorityOrder[a.priority] - priorityOrder[b.priority]);
+  return mapped;
+}
+
 export function useProjects() {
   const { user } = useAuth();
   const [projects, setProjects] = useState<ProjectWithCount[]>([]);
@@ -23,6 +39,7 @@ export function useProjects() {
   const [tasks, setTasks] = useState<TaskWithChangelog[]>([]);
   const [loading, setLoading] = useState(false);
 
+  /* Fetch all projects with their task counts */
   const fetchProjects = useCallback(async () => {
     if (!user) return;
     const { data, error } = await supabase
@@ -36,21 +53,22 @@ export function useProjects() {
       ...p,
       taskCount: p.tasks?.length || 0,
     }));
-    // Remove the nested tasks array
     mapped.forEach((p: any) => delete p.tasks);
 
     setProjects(mapped);
+    // Default to 'all' if current selection is invalid
     if (!selectedProjectId || (!['all', 'my', 'dept'].includes(selectedProjectId) && mapped.length > 0 && !mapped.find(p => p.id === selectedProjectId))) {
       setSelectedProjectId('all');
     }
   }, [user, selectedProjectId]);
 
+  /* Fetch tasks for the selected view (all / my / dept / specific project) */
   const fetchTasks = useCallback(async (projectId: string) => {
     if (!projectId) { setTasks([]); return; }
     setLoading(true);
 
+    // "My Projects" — tasks assigned to the current user
     if (projectId === 'my') {
-      // Fetch current user's profile to get display_name
       const { data: profile } = await supabase
         .from('profiles')
         .select('display_name, employee_number')
@@ -59,7 +77,6 @@ export function useProjects() {
 
       if (!profile) { setTasks([]); setLoading(false); return; }
 
-      // Find tasks where assignee contains this user's name
       const { data, error } = await supabase
         .from('tasks')
         .select('*, task_changelog(*)')
@@ -67,19 +84,12 @@ export function useProjects() {
         .order('created_at', { ascending: true });
 
       if (error) { toast.error('Failed to load tasks'); setLoading(false); return; }
-
-      const priorityOrder = { high: 0, medium: 1, low: 2 };
-      const mapped: TaskWithChangelog[] = (data || []).map((t: any) => ({
-        ...t,
-        changelog: (t.task_changelog || []).sort((a: any, b: any) => new Date(a.created_at).getTime() - new Date(b.created_at).getTime()),
-      }));
-      mapped.forEach((t: any) => delete t.task_changelog);
-      mapped.sort((a, b) => priorityOrder[a.priority] - priorityOrder[b.priority]);
-      setTasks(mapped);
+      setTasks(mapAndSortTasks(data));
       setLoading(false);
       return;
     }
 
+    // "My Department" — all tasks in the user's department
     if (projectId === 'dept') {
       const { data: profile } = await supabase
         .from('profiles')
@@ -96,19 +106,12 @@ export function useProjects() {
         .order('created_at', { ascending: true });
 
       if (error) { toast.error('Failed to load tasks'); setLoading(false); return; }
-
-      const priorityOrder = { high: 0, medium: 1, low: 2 };
-      const mapped: TaskWithChangelog[] = (data || []).map((t: any) => ({
-        ...t,
-        changelog: (t.task_changelog || []).sort((a: any, b: any) => new Date(a.created_at).getTime() - new Date(b.created_at).getTime()),
-      }));
-      mapped.forEach((t: any) => delete t.task_changelog);
-      mapped.sort((a, b) => priorityOrder[a.priority] - priorityOrder[b.priority]);
-      setTasks(mapped);
+      setTasks(mapAndSortTasks(data));
       setLoading(false);
       return;
     }
 
+    // "All Projects" or a specific project
     let query = supabase
       .from('tasks')
       .select('*, task_changelog(*)')
@@ -119,24 +122,16 @@ export function useProjects() {
     }
 
     const { data, error } = await query;
-
     if (error) { toast.error('Failed to load tasks'); setLoading(false); return; }
-
-    const priorityOrder = { high: 0, medium: 1, low: 2 };
-    const mapped: TaskWithChangelog[] = (data || []).map((t: any) => ({
-      ...t,
-      changelog: (t.task_changelog || []).sort((a: any, b: any) => new Date(a.created_at).getTime() - new Date(b.created_at).getTime()),
-    }));
-    mapped.forEach((t: any) => delete t.task_changelog);
-    mapped.sort((a, b) => priorityOrder[a.priority] - priorityOrder[b.priority]);
-    setTasks(mapped);
+    setTasks(mapAndSortTasks(data));
     setLoading(false);
   }, [user]);
 
+  // Initial data load
   useEffect(() => { fetchProjects(); }, [user]);
   useEffect(() => { if (selectedProjectId) fetchTasks(selectedProjectId); }, [selectedProjectId]);
 
-  // Realtime subscription for tasks
+  /* Realtime: re-fetch on any task change */
   useEffect(() => {
     const channel = supabase
       .channel('tasks-realtime')
@@ -148,35 +143,31 @@ export function useProjects() {
     return () => { supabase.removeChannel(channel); };
   }, [selectedProjectId, fetchTasks, fetchProjects]);
 
+  /* Move task to a new status column (Kanban drag) */
   const moveTask = useCallback(async (taskId: string, newStatus: 'todo' | 'in_progress' | 'done') => {
-    // Optimistic update
     setTasks(prev => prev.map(t => t.id === taskId ? { ...t, status: newStatus } : t));
-
     const { error } = await supabase.from('tasks').update({ status: newStatus }).eq('id', taskId);
     if (error) { toast.error('Failed to update task'); fetchTasks(selectedProjectId); return; }
-
-    // Add changelog entry
-    await supabase.from('task_changelog').insert({
-      task_id: taskId,
-      message: `Status changed to ${newStatus.replace('_', ' ')}`,
-    });
-
+    await supabase.from('task_changelog').insert({ task_id: taskId, message: `Status changed to ${newStatus.replace('_', ' ')}` });
     fetchTasks(selectedProjectId);
     window.dispatchEvent(new Event('tasks-updated'));
   }, [selectedProjectId, fetchTasks]);
 
+  /* Update task date range (Timeline drag) */
   const updateTaskDates = useCallback(async (taskId: string, startDate: string, endDate: string) => {
     setTasks(prev => prev.map(t => t.id === taskId ? { ...t, start_date: startDate, end_date: endDate } : t));
     const { error } = await supabase.from('tasks').update({ start_date: startDate, end_date: endDate } as any).eq('id', taskId);
     if (error) { toast.error('Failed to update dates'); fetchTasks(selectedProjectId); }
   }, [selectedProjectId, fetchTasks]);
 
+  /* Update task time range */
   const updateTaskTimes = useCallback(async (taskId: string, startTime: string, endTime: string) => {
     setTasks(prev => prev.map(t => t.id === taskId ? { ...t, start_time: startTime, end_time: endTime } as any : t));
     const { error } = await supabase.from('tasks').update({ start_time: startTime, end_time: endTime } as any).eq('id', taskId);
     if (error) { toast.error('Failed to update times'); fetchTasks(selectedProjectId); }
   }, [selectedProjectId, fetchTasks]);
 
+  /* Edit task details (title, description, priority, assignee, department) */
   const updateTask = useCallback(async (taskId: string, updates: { title: string; description: string; priority: 'low' | 'medium' | 'high'; assignee: string; department: string }) => {
     setTasks(prev => prev.map(t => t.id === taskId ? ({ ...t, ...updates, assignee: updates.assignee || null, department: updates.department || null } as any) : t));
     const { error } = await supabase.from('tasks').update({
@@ -193,6 +184,7 @@ export function useProjects() {
     window.dispatchEvent(new Event('tasks-updated'));
   }, [selectedProjectId, fetchTasks]);
 
+  /* Delete a task */
   const deleteTask = useCallback(async (taskId: string) => {
     setTasks(prev => prev.filter(t => t.id !== taskId));
     const { error } = await supabase.from('tasks').delete().eq('id', taskId);
@@ -202,6 +194,7 @@ export function useProjects() {
     window.dispatchEvent(new Event('tasks-updated'));
   }, [selectedProjectId, fetchTasks, fetchProjects]);
 
+  /* Create a new project */
   const addProject = useCallback(async (name: string, description: string) => {
     if (!user) return;
     const { error } = await supabase.from('projects').insert({ name, description, user_id: user.id });
@@ -210,6 +203,7 @@ export function useProjects() {
     await fetchProjects();
   }, [user, fetchProjects]);
 
+  /* Update project name/description */
   const updateProject = useCallback(async (projectId: string, name: string, description: string) => {
     const { error } = await supabase.from('projects').update({ name, description }).eq('id', projectId);
     if (error) { toast.error('Failed to update project'); return; }
@@ -217,6 +211,7 @@ export function useProjects() {
     await fetchProjects();
   }, [fetchProjects]);
 
+  /* Delete a project (owner only) */
   const deleteProject = useCallback(async (projectId: string) => {
     const { data, error } = await supabase.from('projects').delete().eq('id', projectId).select();
     if (error) { toast.error('Failed to delete project'); return; }
@@ -226,6 +221,7 @@ export function useProjects() {
     await fetchProjects();
   }, [fetchProjects]);
 
+  /* Create a new task in the selected project */
   const addTask = useCallback(async (title: string, description: string, priority: 'low' | 'medium' | 'high', assignee: string, department: string) => {
     if (!selectedProjectId) return;
     const { data, error } = await supabase.from('tasks').insert({
@@ -237,7 +233,6 @@ export function useProjects() {
       department: department || null,
     } as any).select().single();
     if (error) { toast.error('Failed to create task'); return; }
-
     await supabase.from('task_changelog').insert({ task_id: data.id, message: 'Task created' });
     toast.success('Task created');
     await fetchTasks(selectedProjectId);
@@ -245,10 +240,10 @@ export function useProjects() {
     window.dispatchEvent(new Event('tasks-updated'));
   }, [selectedProjectId, fetchTasks, fetchProjects]);
 
+  /* Seed database with sample projects & tasks */
   const seedDatabase = useCallback(async () => {
     if (!user) return;
     try {
-      // Create sample projects
       const { data: p1 } = await supabase.from('projects').insert({ name: 'Website Redesign', description: 'Modernize the company website', user_id: user.id }).select().single();
       const { data: p2 } = await supabase.from('projects').insert({ name: 'Mobile App', description: 'Build cross-platform mobile app', user_id: user.id }).select().single();
 

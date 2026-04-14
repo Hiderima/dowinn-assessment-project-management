@@ -10,6 +10,7 @@ export interface Employee {
   position: string | null;
 }
 
+/** Fetches employee profiles and provides department-based helpers */
 export function useEmployees() {
   const [employees, setEmployees] = useState<Employee[]>([]);
   const [loading, setLoading] = useState(true);
@@ -28,7 +29,10 @@ export function useEmployees() {
     fetch();
   }, []);
 
+  // Unique departments excluding Administration
   const departments = [...new Set(employees.map(e => e.department).filter(Boolean).filter(d => d !== 'Administration'))] as string[];
+
+  // Filter employees by department
   const getByDepartment = (dept: string) => employees.filter(e => e.department === dept);
 
   return { employees, departments, getByDepartment, loading };

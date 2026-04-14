@@ -23,18 +23,27 @@ import type { TaskWithChangelog } from '@/hooks/useProjects';
 const Index = () => {
   const { user, signOut } = useAuth();
   const { projects, selectedProject, selectedProjectId, setSelectedProjectId, tasks, loading, moveTask, addProject, updateProject, deleteProject, addTask, updateTask, deleteTask, updateTaskDates, updateTaskTimes, seedDatabase } = useProjects();
+
+  /* Modal visibility states */
   const [showAddProject, setShowAddProject] = useState(false);
   const [showEditProject, setShowEditProject] = useState(false);
   const [showAddTask, setShowAddTask] = useState(false);
   const [editingTask, setEditingTask] = useState<TaskWithChangelog | null>(null);
+
+  /* Mobile layout toggles */
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [kanbanOpen, setKanbanOpen] = useState(false);
+
+  /* Department filter for timeline in "All Projects" */
   const [timelineDeptFilter, setTimelineDeptFilter] = useState<string>('all');
+
   const isMobile = useIsMobile();
   const { departments } = useEmployees();
   const { theme, toggle: toggleTheme } = useTheme();
   const { isAdmin } = useAdmin();
   const navigate = useNavigate();
+
+  /* Current user's profile info */
   const [displayName, setDisplayName] = useState<string | null>(null);
   const [userDepartment, setUserDepartment] = useState<string | null>(null);
 
@@ -45,6 +54,9 @@ const Index = () => {
       setUserDepartment(data?.department || null);
     });
   }, [user]);
+
+  /* Helper: check if viewing a specific project (not a virtual view) */
+  const isSpecificProject = !['all', 'my', 'dept'].includes(selectedProjectId);
 
   return (
     <div className="flex h-screen overflow-hidden">
@@ -69,7 +81,9 @@ const Index = () => {
         />
       </div>
 
+      {/* Main content area */}
       <div className="flex-1 flex flex-col overflow-hidden">
+        {/* Top header bar */}
         <header className="h-14 flex items-center justify-between px-4 md:px-6 border-b bg-card">
           <div className="flex items-center gap-2 md:gap-3">
             {isMobile && (
@@ -82,47 +96,38 @@ const Index = () => {
               <h1 className="text-sm font-semibold text-card-foreground">
                 {selectedProjectId === 'all' ? 'All Projects' : selectedProjectId === 'my' ? 'My Projects' : selectedProjectId === 'dept' ? `My Department — ${userDepartment || ''}` : selectedProject?.name || 'Select a project'}
               </h1>
-              {selectedProjectId !== 'all' && selectedProjectId !== 'my' && selectedProjectId !== 'dept' && selectedProject && <p className="text-xs text-muted-foreground hidden md:block">{selectedProject.description}</p>}
+              {isSpecificProject && selectedProject && <p className="text-xs text-muted-foreground hidden md:block">{selectedProject.description}</p>}
               {selectedProjectId === 'all' && <p className="text-xs text-muted-foreground hidden md:block">Overview of all projects</p>}
               {selectedProjectId === 'my' && <p className="text-xs text-muted-foreground hidden md:block">Projects where you are assigned</p>}
               {selectedProjectId === 'dept' && <p className="text-xs text-muted-foreground hidden md:block">All tasks in your department</p>}
             </div>
           </div>
           <div className="flex items-center gap-1.5 md:gap-2">
-            {/* Kanban burger toggle (mobile/tablet only) */}
-            {isMobile && !['all', 'my', 'dept'].includes(selectedProjectId) && (
-              <button
-                onClick={() => setKanbanOpen(v => !v)}
-                className="p-1.5 rounded-md text-muted-foreground hover:bg-muted transition-colors"
-                title={kanbanOpen ? 'Hide Kanban' : 'Show Kanban'}
-              >
+            {/* Kanban toggle (mobile only, specific project) */}
+            {isMobile && isSpecificProject && (
+              <button onClick={() => setKanbanOpen(v => !v)} className="p-1.5 rounded-md text-muted-foreground hover:bg-muted transition-colors" title={kanbanOpen ? 'Hide Kanban' : 'Show Kanban'}>
                 {kanbanOpen ? <X className="w-4 h-4" /> : <LayoutDashboard className="w-4 h-4" />}
               </button>
             )}
-            {selectedProject && !['all', 'my', 'dept'].includes(selectedProjectId) && (
+            {/* Edit project & add task buttons (specific project only) */}
+            {selectedProject && isSpecificProject && (
               <>
-                <button
-                  onClick={() => setShowEditProject(true)}
-                  className="p-1.5 rounded-md text-muted-foreground hover:bg-muted hover:text-foreground transition-colors"
-                  title="Edit project"
-                >
+                <button onClick={() => setShowEditProject(true)} className="p-1.5 rounded-md text-muted-foreground hover:bg-muted hover:text-foreground transition-colors" title="Edit project">
                   <Settings className="w-4 h-4" />
                 </button>
-                <button
-                  onClick={() => setShowAddTask(true)}
-                  className="flex items-center gap-1.5 px-2 md:px-3 py-1.5 rounded-md text-xs font-medium bg-primary text-primary-foreground hover:bg-primary/90 transition-colors"
-                >
+                <button onClick={() => setShowAddTask(true)} className="flex items-center gap-1.5 px-2 md:px-3 py-1.5 rounded-md text-xs font-medium bg-primary text-primary-foreground hover:bg-primary/90 transition-colors">
                   <Plus className="w-3.5 h-3.5" />
                   <span className="hidden md:inline">Add Task</span>
                 </button>
               </>
             )}
-            {/* Dark mode toggle */}
+            {/* Admin panel shortcut */}
             {isAdmin && (
               <button onClick={() => navigate('/admin')} className="p-1.5 rounded-md text-muted-foreground hover:bg-muted hover:text-foreground transition-colors" title="Admin Panel">
                 <Shield className="w-4 h-4" />
               </button>
             )}
+            {/* Theme toggle */}
             <button onClick={toggleTheme} className="p-1.5 rounded-md text-muted-foreground hover:bg-muted hover:text-foreground transition-colors" title="Toggle dark mode">
               {theme === 'dark' ? <Sun className="w-4 h-4" /> : <Moon className="w-4 h-4" />}
             </button>
@@ -134,8 +139,8 @@ const Index = () => {
         </header>
 
         <div className="flex-1 overflow-auto">
-          {/* Individual project view */}
-          {!['all', 'my', 'dept'].includes(selectedProjectId) && (
+          {/* ── Specific project view ── */}
+          {isSpecificProject && (
             <div className="px-4 md:px-6 pt-4 pb-2">
               <div className="grid grid-cols-1 lg:grid-cols-[1fr_auto] gap-5 items-start">
                 <div className="space-y-4">
@@ -144,7 +149,6 @@ const Index = () => {
                     <KanbanBoard tasks={tasks} loading={loading} onMoveTask={moveTask} onEditTask={setEditingTask} />
                   )}
                 </div>
-
                 {tasks.length > 0 && (
                   <div className="bg-card rounded-xl border p-4 lg:w-[280px]">
                     <h2 className="text-xs font-semibold text-card-foreground mb-3 flex items-center gap-1.5">
@@ -158,8 +162,8 @@ const Index = () => {
             </div>
           )}
 
-          {/* Per-project Timeline */}
-          {!['all', 'my', 'dept'].includes(selectedProjectId) && tasks.length > 0 && (
+          {/* Per-project timeline */}
+          {isSpecificProject && tasks.length > 0 && (
             <div className="px-4 md:px-6 pb-6">
               <div className="bg-card rounded-xl border p-4 md:p-5">
                 <h2 className="text-sm font-semibold text-card-foreground mb-4 flex items-center gap-2">
@@ -171,7 +175,7 @@ const Index = () => {
             </div>
           )}
 
-          {/* All/My Projects overview */}
+          {/* ── All Projects / My Projects overview ── */}
           {(selectedProjectId === 'all' || selectedProjectId === 'my') && (
             <div className="px-4 md:px-6 py-6 space-y-5">
               {loading ? (
@@ -180,6 +184,7 @@ const Index = () => {
                 </div>
               ) : tasks.length > 0 ? (
                 <>
+                  {/* Pie chart + per-project breakdown */}
                   <div className="bg-card rounded-xl border p-4 md:p-5">
                     <h2 className="text-sm font-semibold text-card-foreground mb-4 flex items-center gap-2">
                       <PieIcon className="w-4 h-4 text-primary" />
@@ -187,6 +192,8 @@ const Index = () => {
                     </h2>
                     <TaskStatusPieChart tasks={tasks} projects={projects} />
                   </div>
+
+                  {/* Department progress (All Projects only) */}
                   {selectedProjectId === 'all' && (
                     <div className="bg-card rounded-xl border p-4 md:p-5">
                       <h2 className="text-sm font-semibold text-card-foreground mb-4 flex items-center gap-2">
@@ -196,6 +203,8 @@ const Index = () => {
                       <DepartmentProgressBars />
                     </div>
                   )}
+
+                  {/* Timeline with optional department filter */}
                   <div className="bg-card rounded-xl border p-4 md:p-5">
                     <div className="flex items-center justify-between mb-4">
                       <h2 className="text-sm font-semibold text-card-foreground flex items-center gap-2">
@@ -232,7 +241,7 @@ const Index = () => {
             </div>
           )}
 
-          {/* My Department view */}
+          {/* ── My Department view ── */}
           {selectedProjectId === 'dept' && (
             <div className="px-4 md:px-6 py-6 space-y-5">
               {loading ? (
@@ -241,6 +250,7 @@ const Index = () => {
                 </div>
               ) : tasks.length > 0 ? (
                 <>
+                  {/* Department-specific progress */}
                   <div className="bg-card rounded-xl border p-4 md:p-5">
                     <h2 className="text-sm font-semibold text-card-foreground mb-4 flex items-center gap-2">
                       <Building2 className="w-4 h-4 text-primary" />
@@ -248,6 +258,8 @@ const Index = () => {
                     </h2>
                     <DepartmentProgressBars filterDepartment={userDepartment || undefined} />
                   </div>
+
+                  {/* Per-project breakdown for the department */}
                   <div className="bg-card rounded-xl border p-4 md:p-5">
                     <h2 className="text-sm font-semibold text-card-foreground mb-4 flex items-center gap-2">
                       <PieIcon className="w-4 h-4 text-primary" />
@@ -255,7 +267,11 @@ const Index = () => {
                     </h2>
                     <TaskStatusPieChart tasks={tasks} projects={projects} />
                   </div>
+
+                  {/* Kanban board */}
                   <KanbanBoard tasks={tasks} loading={loading} onMoveTask={moveTask} onEditTask={setEditingTask} />
+
+                  {/* Department timeline */}
                   <div className="bg-card rounded-xl border p-4 md:p-5">
                     <h2 className="text-sm font-semibold text-card-foreground mb-4 flex items-center gap-2">
                       <Table2 className="w-4 h-4 text-primary" />
@@ -274,6 +290,7 @@ const Index = () => {
         </div>
       </div>
 
+      {/* Modals */}
       <AddProjectModal open={showAddProject} onClose={() => setShowAddProject(false)} onAdd={addProject} />
       <AddTaskModal open={showAddTask} onClose={() => setShowAddTask(false)} onAdd={addTask} />
       <EditProjectModal

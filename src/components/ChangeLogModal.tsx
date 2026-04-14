@@ -6,11 +6,15 @@ interface Props {
   onClose: () => void;
 }
 
+/** Modal showing chronological change history for a task */
 export function ChangeLogModal({ task, onClose }: Props) {
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center">
+      {/* Backdrop */}
       <div className="absolute inset-0 bg-foreground/40 backdrop-blur-sm" onClick={onClose} />
+
       <div className="relative bg-card rounded-xl shadow-xl border w-full max-w-md mx-4 overflow-hidden">
+        {/* Header */}
         <div className="flex items-center justify-between p-5 border-b">
           <div>
             <h2 className="text-base font-semibold text-card-foreground">Change Log</h2>
@@ -20,6 +24,8 @@ export function ChangeLogModal({ task, onClose }: Props) {
             <X className="w-4 h-4 text-muted-foreground" />
           </button>
         </div>
+
+        {/* Timeline entries */}
         <div className="p-5 max-h-80 overflow-y-auto">
           {task.changelog.length === 0 ? (
             <p className="text-sm text-muted-foreground text-center py-8">No history yet</p>

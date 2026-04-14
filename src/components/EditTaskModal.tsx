@@ -12,6 +12,7 @@ interface Props {
   onStatusChange?: (taskId: string, status: 'todo' | 'in_progress' | 'done') => void;
 }
 
+/** Modal form for editing an existing task's details, status, and assignment */
 export function EditTaskModal({ open, task, onClose, onUpdate, onDelete, onStatusChange }: Props) {
   const [title, setTitle] = useState('');
   const [description, setDescription] = useState('');
@@ -22,9 +23,10 @@ export function EditTaskModal({ open, task, onClose, onUpdate, onDelete, onStatu
   const [confirmDelete, setConfirmDelete] = useState(false);
   const { departments, getByDepartment, employees } = useEmployees();
 
+  // Populate form when task changes
   useEffect(() => {
     if (task) {
-      const taskDepartment = (task as TaskWithChangelog & { department?: string | null }).department;
+      const taskDept = (task as TaskWithChangelog & { department?: string | null }).department;
       setTitle(task.title);
       setDescription(task.description || '');
       setPriority(task.priority);
@@ -32,8 +34,9 @@ export function EditTaskModal({ open, task, onClose, onUpdate, onDelete, onStatu
       setStatus(task.status);
       setConfirmDelete(false);
 
-      if (taskDepartment) {
-        setSelectedDepartment(taskDepartment);
+      // Resolve department from task field or assignee match
+      if (taskDept) {
+        setSelectedDepartment(taskDept);
       } else if (task.assignee) {
         const match = employees.find(e => `${e.display_name} (${e.employee_number})` === task.assignee);
         setSelectedDepartment(match?.department || '');
@@ -51,17 +54,12 @@ export function EditTaskModal({ open, task, onClose, onUpdate, onDelete, onStatu
     e.preventDefault();
     if (!title.trim()) return;
     onUpdate(task.id, { title: title.trim(), description: description.trim(), priority, assignee, department: selectedDepartment });
-    if (status !== task.status && onStatusChange) {
-      onStatusChange(task.id, status);
-    }
+    if (status !== task.status && onStatusChange) onStatusChange(task.id, status);
     onClose();
   };
 
   const handleDelete = () => {
-    if (!confirmDelete) {
-      setConfirmDelete(true);
-      return;
-    }
+    if (!confirmDelete) { setConfirmDelete(true); return; }
     onDelete(task.id);
     onClose();
   };
@@ -69,6 +67,7 @@ export function EditTaskModal({ open, task, onClose, onUpdate, onDelete, onStatu
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50" onClick={onClose}>
       <div className="bg-card rounded-xl border shadow-2xl w-full max-w-md mx-4" onClick={e => e.stopPropagation()}>
+        {/* Header */}
         <div className="flex items-center justify-between p-5 border-b">
           <div className="flex items-center gap-2">
             <Pencil className="w-5 h-5 text-primary" />
@@ -78,6 +77,7 @@ export function EditTaskModal({ open, task, onClose, onUpdate, onDelete, onStatu
             <X className="w-4 h-4" />
           </button>
         </div>
+
         <form onSubmit={handleSubmit} className="p-5 space-y-4">
           <div>
             <label className="text-sm font-medium text-card-foreground mb-1 block">Title</label>
@@ -87,6 +87,7 @@ export function EditTaskModal({ open, task, onClose, onUpdate, onDelete, onStatu
             <label className="text-sm font-medium text-card-foreground mb-1 block">Description</label>
             <textarea value={description} onChange={e => setDescription(e.target.value)} className="w-full px-3 py-2 rounded-lg border bg-background text-foreground text-sm focus:outline-none focus:ring-2 focus:ring-primary/30 resize-none" rows={3} />
           </div>
+          {/* Status & priority side by side */}
           <div className="grid grid-cols-2 gap-4">
             <div>
               <label className="text-sm font-medium text-card-foreground mb-1 block">Status</label>
@@ -107,23 +108,16 @@ export function EditTaskModal({ open, task, onClose, onUpdate, onDelete, onStatu
           </div>
           <div>
             <label className="text-sm font-medium text-card-foreground mb-1 block">Department</label>
-            <select
-              value={selectedDepartment}
-              onChange={e => { setSelectedDepartment(e.target.value); setAssignee(''); }}
-              className="w-full px-3 py-2 rounded-lg border bg-background text-foreground text-sm focus:outline-none focus:ring-2 focus:ring-primary/30"
-            >
+            <select value={selectedDepartment} onChange={e => { setSelectedDepartment(e.target.value); setAssignee(''); }} className="w-full px-3 py-2 rounded-lg border bg-background text-foreground text-sm focus:outline-none focus:ring-2 focus:ring-primary/30">
               <option value="">Select department...</option>
               {departments.map(d => <option key={d} value={d}>{d}</option>)}
             </select>
           </div>
+          {/* Assignee appears after department selection */}
           {selectedDepartment && (
             <div>
               <label className="text-sm font-medium text-card-foreground mb-1 block">Assignee</label>
-              <select
-                value={assignee}
-                onChange={e => setAssignee(e.target.value)}
-                className="w-full px-3 py-2 rounded-lg border bg-background text-foreground text-sm focus:outline-none focus:ring-2 focus:ring-primary/30"
-              >
+              <select value={assignee} onChange={e => setAssignee(e.target.value)} className="w-full px-3 py-2 rounded-lg border bg-background text-foreground text-sm focus:outline-none focus:ring-2 focus:ring-primary/30">
                 <option value="">Select assignee...</option>
                 {filteredEmployees.map(emp => (
                   <option key={emp.id} value={`${emp.display_name} (${emp.employee_number})`}>
@@ -133,12 +127,9 @@ export function EditTaskModal({ open, task, onClose, onUpdate, onDelete, onStatu
               </select>
             </div>
           )}
+          {/* Footer: delete + save/cancel */}
           <div className="flex items-center justify-between pt-2">
-            <button
-              type="button"
-              onClick={handleDelete}
-              className={`flex items-center gap-1.5 px-3 py-2 text-sm rounded-lg transition-colors ${confirmDelete ? 'bg-destructive text-destructive-foreground' : 'text-destructive hover:bg-destructive/10'}`}
-            >
+            <button type="button" onClick={handleDelete} className={`flex items-center gap-1.5 px-3 py-2 text-sm rounded-lg transition-colors ${confirmDelete ? 'bg-destructive text-destructive-foreground' : 'text-destructive hover:bg-destructive/10'}`}>
               <Trash2 className="w-3.5 h-3.5" />
               {confirmDelete ? 'Confirm Delete' : 'Delete'}
             </button>
