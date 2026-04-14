@@ -12,6 +12,7 @@ import { TaskStatusPieChart } from '@/components/TaskStatusPieChart';
 import { TimelineView } from '@/components/TimelineView';
 import { DepartmentProgressBars } from '@/components/DepartmentProgressBars';
 import { useProjects } from '@/hooks/useProjects';
+import { useEmployees } from '@/hooks/useEmployees';
 import { useAuth } from '@/contexts/AuthContext';
 import { supabase } from '@/integrations/supabase/client';
 import { useIsMobile } from '@/hooks/use-mobile';
@@ -28,7 +29,9 @@ const Index = () => {
   const [editingTask, setEditingTask] = useState<TaskWithChangelog | null>(null);
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [kanbanOpen, setKanbanOpen] = useState(false);
+  const [timelineDeptFilter, setTimelineDeptFilter] = useState<string>('all');
   const isMobile = useIsMobile();
+  const { departments } = useEmployees();
   const { theme, toggle: toggleTheme } = useTheme();
   const { isAdmin } = useAdmin();
   const navigate = useNavigate();
@@ -194,11 +197,31 @@ const Index = () => {
                     </div>
                   )}
                   <div className="bg-card rounded-xl border p-4 md:p-5">
-                    <h2 className="text-sm font-semibold text-card-foreground mb-4 flex items-center gap-2">
-                      <Table2 className="w-4 h-4 text-primary" />
-                      {selectedProjectId === 'my' ? 'Timeline — My Projects' : 'Timeline — All Projects'}
-                    </h2>
-                    <TimelineView tasks={tasks} onUpdateDates={updateTaskDates} onUpdateTimes={updateTaskTimes} onEditTask={setEditingTask} projects={projects} />
+                    <div className="flex items-center justify-between mb-4">
+                      <h2 className="text-sm font-semibold text-card-foreground flex items-center gap-2">
+                        <Table2 className="w-4 h-4 text-primary" />
+                        {selectedProjectId === 'my' ? 'Timeline — My Projects' : 'Timeline — All Projects'}
+                      </h2>
+                      {selectedProjectId === 'all' && (
+                        <select
+                          value={timelineDeptFilter}
+                          onChange={e => setTimelineDeptFilter(e.target.value)}
+                          className="px-2 py-1 rounded-md border bg-background text-foreground text-xs focus:outline-none focus:ring-2 focus:ring-primary/30"
+                        >
+                          <option value="all">All Departments</option>
+                          {departments.map(d => <option key={d} value={d}>{d}</option>)}
+                        </select>
+                      )}
+                    </div>
+                    <TimelineView
+                      tasks={selectedProjectId === 'all' && timelineDeptFilter !== 'all'
+                        ? tasks.filter(t => (t as any).department === timelineDeptFilter)
+                        : tasks}
+                      onUpdateDates={updateTaskDates}
+                      onUpdateTimes={updateTaskTimes}
+                      onEditTask={setEditingTask}
+                      projects={projects}
+                    />
                   </div>
                 </>
               ) : (
