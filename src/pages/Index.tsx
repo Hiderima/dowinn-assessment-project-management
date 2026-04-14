@@ -186,7 +186,7 @@ const Index = () => {
                       <PieIcon className="w-4 h-4 text-primary" />
                       Department Progress
                     </h2>
-                    <DepartmentProgressBars tasks={tasks} />
+                    <DepartmentProgressBars />
                   </div>
                   <div className="bg-card rounded-xl border p-4 md:p-5">
                     <h2 className="text-sm font-semibold text-card-foreground mb-4 flex items-center gap-2">
