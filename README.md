@@ -20,7 +20,7 @@ A Kanban-style management tool designed with scalability and clean code standard
 ### Folder Structure Setup
 Ensure your folders are organized as follows to maintain clear separation of concerns:
 /root
-├── /frontend  (The Next.js/Lovable code)
+├── /frontend  (The Next.js/code)
 └── /backend   (The manual Node.js API)
 
 
