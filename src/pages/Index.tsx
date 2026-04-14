@@ -12,6 +12,7 @@ import { TaskStatusPieChart } from '@/components/TaskStatusPieChart';
 import { TimelineView } from '@/components/TimelineView';
 import { DepartmentProgressBars } from '@/components/DepartmentProgressBars';
 import { useProjects } from '@/hooks/useProjects';
+import { useEmployees } from '@/hooks/useEmployees';
 import { useAuth } from '@/contexts/AuthContext';
 import { supabase } from '@/integrations/supabase/client';
 import { useIsMobile } from '@/hooks/use-mobile';
@@ -28,6 +29,7 @@ const Index = () => {
   const [editingTask, setEditingTask] = useState<TaskWithChangelog | null>(null);
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [kanbanOpen, setKanbanOpen] = useState(false);
+  const [timelineDeptFilter, setTimelineDeptFilter] = useState<string>('all');
   const isMobile = useIsMobile();
   const { theme, toggle: toggleTheme } = useTheme();
   const { isAdmin } = useAdmin();
