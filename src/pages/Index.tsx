@@ -11,6 +11,7 @@ import { ProjectProgressBar } from '@/components/ProjectProgressBar';
 import { TaskStatusPieChart } from '@/components/TaskStatusPieChart';
 import { TimelineView } from '@/components/TimelineView';
 import { DepartmentProgressBars } from '@/components/DepartmentProgressBars';
+import { ChatBot } from '@/components/ChatBot';
 import { useProjects } from '@/hooks/useProjects';
 import { useEmployees } from '@/hooks/useEmployees';
 import { useAuth } from '@/contexts/AuthContext';
@@ -308,6 +309,9 @@ const Index = () => {
         onDelete={deleteTask}
         onStatusChange={moveTask}
       />
+
+      {/* AI assistant (scoped to task status + departments) */}
+      <ChatBot />
     </div>
   );
 };
