@@ -43,7 +43,7 @@ export function ProjectSidebar({ projects, selectedId, onSelect, onSeed, onAddPr
           <div className="w-8 h-8 rounded-lg bg-sidebar-primary flex items-center justify-center">
             <FolderKanban className="w-4 h-4 text-sidebar-primary-foreground" />
           </div>
-          <span className="font-semibold text-sidebar-accent-foreground tracking-tight">ProjectFlow</span>
+          <span className="font-semibold text-sidebar-accent-foreground tracking-tight">Dowinn Project Management</span>
         </div>
       </div>
 

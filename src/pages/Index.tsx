@@ -309,9 +309,6 @@ const Index = () => {
         onDelete={deleteTask}
         onStatusChange={moveTask}
       />
-
-      {/* AI assistant (scoped to task status + departments) */}
-      <ChatBot />
     </div>
   );
 };
