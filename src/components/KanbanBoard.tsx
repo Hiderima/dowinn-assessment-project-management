@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { DragDropContext, type DropResult } from '@hello-pangea/dnd';
 import { KanbanColumn } from './KanbanColumn';
 import { ChangeLogModal } from './ChangeLogModal';
+import { ChatBot } from './ChatBot';
 import type { TaskWithChangelog } from '@/hooks/useProjects';
 
 /* Column definitions with semantic color variables */
@@ -18,7 +19,7 @@ interface Props {
   onEditTask?: (task: TaskWithChangelog) => void;
 }
 
-/** Drag-and-drop Kanban board with three status columns */
+/** Drag-and-drop Kanban board with three status columns + scoped AI assistant */
 export function KanbanBoard({ tasks, loading, onMoveTask, onEditTask }: Props) {
   const [logTask, setLogTask] = useState<TaskWithChangelog | null>(null);
 
@@ -41,18 +42,22 @@ export function KanbanBoard({ tasks, loading, onMoveTask, onEditTask }: Props) {
   return (
     <>
       <DragDropContext onDragEnd={onDragEnd}>
-        <div className="flex flex-col md:flex-row gap-5 overflow-x-auto p-4 md:p-6">
-          {COLUMNS.map(col => (
-            <KanbanColumn
-              key={col.id}
-              status={col.id}
-              title={col.title}
-              colorVar={col.colorVar}
-              tasks={tasks.filter(t => t.status === col.id)}
-              onOpenLog={setLogTask}
-              onEdit={onEditTask}
-            />
-          ))}
+        <div className="relative">
+          <div className="flex flex-col md:flex-row gap-5 overflow-x-auto p-4 md:p-6">
+            {COLUMNS.map(col => (
+              <KanbanColumn
+                key={col.id}
+                status={col.id}
+                title={col.title}
+                colorVar={col.colorVar}
+                tasks={tasks.filter(t => t.status === col.id)}
+                onOpenLog={setLogTask}
+                onEdit={onEditTask}
+              />
+            ))}
+          </div>
+          {/* AI assistant scoped to task status + departments, anchored to the Kanban area */}
+          <ChatBot />
         </div>
       </DragDropContext>
       {logTask && <ChangeLogModal task={logTask} onClose={() => setLogTask(null)} />}
