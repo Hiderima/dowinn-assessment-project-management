@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { DragDropContext, type DropResult } from '@hello-pangea/dnd';
 import { KanbanColumn } from './KanbanColumn';
 import { ChangeLogModal } from './ChangeLogModal';
-import { ChatBot } from './ChatBot';
+
 import type { TaskWithChangelog } from '@/hooks/useProjects';
 
 /* Column definitions with semantic color variables */
@@ -57,8 +57,6 @@ export function KanbanBoard({ tasks, loading, onMoveTask, onEditTask }: Props) {
         </div>
       </DragDropContext>
       {logTask && <ChangeLogModal task={logTask} onClose={() => setLogTask(null)} />}
-      {/* Floating AI assistant — fixed bottom-right, scoped to task/dept progress */}
-      <ChatBot />
     </>
   );
 }
