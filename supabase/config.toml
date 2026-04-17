@@ -1,1 +1,4 @@
 project_id = "eafesznnjapnfrzobutj"
+
+[functions.task-chat]
+verify_jwt = false
