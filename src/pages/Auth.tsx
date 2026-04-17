@@ -30,7 +30,7 @@ export default function Auth() {
           <div className="w-10 h-10 rounded-xl bg-primary flex items-center justify-center">
             <FolderKanban className="w-5 h-5 text-primary-foreground" />
           </div>
-          <span className="text-xl font-bold text-foreground tracking-tight">ProjectFlow</span>
+          <span className="text-xl font-bold text-foreground tracking-tight">Dowinn Project Management</span>
         </div>
 
         <div className="bg-card rounded-2xl border shadow-lg p-8">
