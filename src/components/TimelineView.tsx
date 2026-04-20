@@ -152,7 +152,7 @@ export function TimelineView({ tasks, onUpdateDates, onUpdateTimes, onEditTask, 
           {/* Left: Task list */}
           <div
             className="flex-shrink-0 border-r"
-            style={{ width: TASK_LIST_WIDTH }}
+            style={{ width: TASK_LIST_W }}
           >
             {/* Header */}
             <div className="h-[52px] flex items-end px-3 pb-2 border-b bg-muted/30">
