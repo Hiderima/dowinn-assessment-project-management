@@ -62,6 +62,9 @@ export function TimelineView({ tasks, onUpdateDates, onUpdateTimes, onEditTask, 
   const [viewOffset, setViewOffset] = useState(0);
   const timelineRef = useRef<HTMLDivElement>(null);
   const taskListRef = useRef<HTMLDivElement>(null);
+  const isMobile = useIsMobile();
+  const DAY_W = isMobile ? DAY_WIDTH_MOBILE : DAY_WIDTH_DESKTOP;
+  const TASK_LIST_W = isMobile ? TASK_LIST_WIDTH_MOBILE : TASK_LIST_WIDTH_DESKTOP;
 
   // Sync vertical scroll between task list and timeline
   const handleTimelineScroll = useCallback(() => {
