@@ -271,9 +271,10 @@ interface RowProps {
   totalDays: number;
   onUpdateDates: (taskId: string, startDate: string, endDate: string) => void;
   onEditTask?: (task: TaskWithChangelog) => void;
+  dayWidth?: number;
 }
 
-function TimelineRow({ task, timelineStart, totalDays, onUpdateDates, onEditTask }: RowProps) {
+function TimelineRow({ task, timelineStart, totalDays, onUpdateDates, onEditTask, dayWidth = DAY_WIDTH }: RowProps) {
   const taskStart = task.start_date ? parseISO(task.start_date) : new Date(task.created_at);
   const taskEnd = task.end_date ? parseISO(task.end_date) : addDays(taskStart, 3);
 
