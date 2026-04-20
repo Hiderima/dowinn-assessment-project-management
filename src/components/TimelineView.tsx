@@ -366,7 +366,7 @@ function TimelineRow({ task, timelineStart, totalDays, onUpdateDates, onEditTask
           return (
             <div
               className="absolute top-0 bottom-0 w-[2px] bg-primary/40 z-[1]"
-              style={{ left: todayOffset * DAY_WIDTH + DAY_WIDTH / 2 }}
+              style={{ left: todayOffset * dayWidth + dayWidth / 2 }}
             />
           );
         }
