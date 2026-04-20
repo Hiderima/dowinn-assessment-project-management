@@ -226,7 +226,7 @@ export function TimelineView({ tasks, onUpdateDates, onUpdateTimes, onEditTask, 
                           isWeekend && 'bg-muted/40',
                           isToday && 'bg-primary/10'
                         )}
-                        style={{ width: DAY_WIDTH }}
+                        style={{ width: DAY_W }}
                       >
                         <span className={cn('font-medium', isToday ? 'text-primary' : 'text-muted-foreground')}>
                           {format(day, 'EEE')}
