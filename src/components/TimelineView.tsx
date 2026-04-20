@@ -253,6 +253,7 @@ export function TimelineView({ tasks, onUpdateDates, onUpdateTimes, onEditTask, 
                     totalDays={totalDays}
                     onUpdateDates={onUpdateDates}
                     onEditTask={onEditTask}
+                    dayWidth={DAY_W}
                   />
                 ))}
               </div>
