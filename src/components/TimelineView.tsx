@@ -192,7 +192,7 @@ export function TimelineView({ tasks, onUpdateDates, onUpdateTimes, onEditTask, 
                     <div className="text-xs font-medium text-card-foreground truncate">{task.title}</div>
                     {!isMobile && (
                       <div className="flex items-center gap-2 mt-1 flex-wrap">
-                        {projects && projects.length > 0 && (() => {
+                        {!isTablet && projects && projects.length > 0 && (() => {
                           const proj = projects.find(p => p.id === task.project_id);
                           return proj ? (
                             <span className="text-[10px] bg-primary/10 text-primary px-1.5 py-0.5 rounded font-medium truncate max-w-[110px]">{proj.name}</span>
