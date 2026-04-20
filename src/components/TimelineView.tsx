@@ -384,7 +384,7 @@ function TimelineRow({ task, timelineStart, totalDays, onUpdateDates, onEditTask
               'absolute top-0 bottom-0 border-l border-border/10',
               isWeekend && 'bg-muted/20'
             )}
-            style={{ left: i * DAY_WIDTH, width: DAY_WIDTH }}
+            style={{ left: i * dayWidth, width: dayWidth }}
           />
         );
       })}
