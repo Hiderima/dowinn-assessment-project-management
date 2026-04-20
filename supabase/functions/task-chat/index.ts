@@ -1,4 +1,4 @@
-// Edge function: AI chatbot scoped to task statuses + departments
+// Edge function: AI chatbot scoped to tasks, statuses, assignees, dates, and departments
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.45.0";
 
 const corsHeaders = {
@@ -20,38 +20,53 @@ Deno.serve(async (req) => {
     const LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY");
     if (!LOVABLE_API_KEY) throw new Error("LOVABLE_API_KEY not configured");
 
-    // Use service role to read all tasks/profiles for context
+    // Service role: read live snapshot of tasks/projects/profiles
     const supabase = createClient(
       Deno.env.get("SUPABASE_URL")!,
       Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!
     );
 
-    // Pull current snapshot of tasks + departments
-    const [{ data: tasks }, { data: profiles }] = await Promise.all([
-      supabase.from("tasks").select("title, status, assignee, department"),
-      supabase.from("profiles").select("display_name, department").not("department", "is", null),
+    const [{ data: tasks }, { data: profiles }, { data: projects }] = await Promise.all([
+      supabase.from("tasks").select("title, status, priority, assignee, department, start_date, end_date, start_time, end_time, project_id"),
+      supabase.from("profiles").select("display_name, department, position"),
+      supabase.from("projects").select("id, name"),
     ]);
 
-    // Build compact context for the model
-    const taskLines = (tasks || []).map(t =>
-      `- "${t.title}" | status: ${t.status} | assignee: ${t.assignee || "unassigned"} | dept: ${t.department || "n/a"}`
-    ).join("\n");
+    const projectMap = new Map((projects || []).map(p => [p.id, p.name]));
 
-    const deptCounts: Record<string, number> = {};
+    // Build compact, fresh context
+    const taskLines = (tasks || []).map(t => {
+      const dates = t.start_date || t.end_date
+        ? ` | ${t.start_date || "?"}${t.start_time ? " " + t.start_time : ""} → ${t.end_date || "?"}${t.end_time ? " " + t.end_time : ""}`
+        : "";
+      const proj = projectMap.get(t.project_id) || "n/a";
+      return `- "${t.title}" | project: ${proj} | status: ${t.status} | priority: ${t.priority} | assignee: ${t.assignee || "unassigned"} | dept: ${t.department || "n/a"}${dates}`;
+    }).join("\n");
+
+    const deptMembers: Record<string, string[]> = {};
     (profiles || []).forEach(p => {
-      if (p.department) deptCounts[p.department] = (deptCounts[p.department] || 0) + 1;
+      const dept = p.department || "Unassigned";
+      if (!deptMembers[dept]) deptMembers[dept] = [];
+      deptMembers[dept].push(`${p.display_name || "Unknown"}${p.position ? ` (${p.position})` : ""}`);
     });
-    const deptLines = Object.entries(deptCounts).map(([d, c]) => `- ${d}: ${c} member(s)`).join("\n");
+    const deptLines = Object.entries(deptMembers)
+      .map(([d, members]) => `- ${d} (${members.length}): ${members.join(", ")}`)
+      .join("\n");
 
-    const systemPrompt = `You are a focused assistant for the Dowinn Project Management app.
-You ONLY answer simple questions about:
-1. Task status — who has tasks that are "done", "in_progress" (ongoing), or "todo" (not yet started).
-2. Departments — which departments exist, who belongs to them, and the progress of tasks per department (e.g. how many done/ongoing/not started for any department, and comparisons across departments).
+    const today = new Date().toISOString().split("T")[0];
+
+    const systemPrompt = `You are a focused assistant for the Dowinn Project Management app. Today is ${today}.
+
+You ONLY answer questions about:
+1. **Tasks** — title, status (done / in_progress / todo), priority, assignee, department, start/end dates and times, and which project they belong to.
+2. **Departments** — which departments exist, who belongs to them, and progress (counts of done / ongoing / not started) per department or compared across departments.
+3. **People** — what tasks are assigned to whom, and progress on those tasks.
 
 If the user asks anything outside these topics, politely refuse and remind them what you can help with.
-Keep answers short and direct. When asked about a department's progress, count tasks by status from the data below.
 
-=== TASKS ===
+Format responses in **markdown**. Use **bold** for names, statuses, and key facts. Use bullet lists for multiple items. Keep answers short and direct. Always base answers on the live data below.
+
+=== TASKS (${(tasks || []).length}) ===
 ${taskLines || "(no tasks)"}
 
 === DEPARTMENTS ===
