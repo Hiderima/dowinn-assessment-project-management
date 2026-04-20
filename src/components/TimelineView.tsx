@@ -307,7 +307,7 @@ function TimelineRow({ task, timelineStart, totalDays, onUpdateDates, onEditTask
 
     const handleMouseMove = (e: MouseEvent) => {
       const dx = e.clientX - dragOrigin.x;
-      const daysDelta = Math.round(dx / DAY_WIDTH);
+      const daysDelta = Math.round(dx / dayWidth);
       if (daysDelta !== 0) didDrag.current = true;
 
       if (dragging === 'move') {
