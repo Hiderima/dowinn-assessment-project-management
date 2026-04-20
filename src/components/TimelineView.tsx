@@ -6,6 +6,7 @@ import type { TaskWithChangelog } from '@/hooks/useProjects';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { Calendar } from '@/components/ui/calendar';
 import { Button } from '@/components/ui/button';
+import { useIsMobile } from '@/hooks/use-mobile';
 
 interface ProjectInfo {
   id: string;
@@ -44,9 +45,14 @@ const priorityBadge: Record<string, { bg: string; text: string }> = {
   low: { bg: 'bg-green-500/15 text-green-400', text: 'Low' },
 };
 
-const TASK_LIST_WIDTH = 320;
-const DAY_WIDTH = 44;
+const TASK_LIST_WIDTH_DESKTOP = 320;
+const TASK_LIST_WIDTH_MOBILE = 140;
+const DAY_WIDTH_DESKTOP = 44;
+const DAY_WIDTH_MOBILE = 36;
 const ROW_HEIGHT = 52;
+// Default DAY_WIDTH used by TimelineRow (kept for backwards compatibility — overridden via prop)
+const DAY_WIDTH = DAY_WIDTH_DESKTOP;
+const TASK_LIST_WIDTH = TASK_LIST_WIDTH_DESKTOP;
 
 function formatAssignee(assignee: string) {
   // Strip employee number like "Name (123456)" → "Name"
@@ -56,6 +62,9 @@ export function TimelineView({ tasks, onUpdateDates, onUpdateTimes, onEditTask, 
   const [viewOffset, setViewOffset] = useState(0);
   const timelineRef = useRef<HTMLDivElement>(null);
   const taskListRef = useRef<HTMLDivElement>(null);
+  const isMobile = useIsMobile();
+  const DAY_W = isMobile ? DAY_WIDTH_MOBILE : DAY_WIDTH_DESKTOP;
+  const TASK_LIST_W = isMobile ? TASK_LIST_WIDTH_MOBILE : TASK_LIST_WIDTH_DESKTOP;
 
   // Sync vertical scroll between task list and timeline
   const handleTimelineScroll = useCallback(() => {
@@ -102,7 +111,7 @@ export function TimelineView({ tasks, onUpdateDates, onUpdateTimes, onEditTask, 
     if (timelineRef.current && viewOffset === 0) {
       const todayOffset = differenceInDays(startOfDay(new Date()), timelineStart);
       if (todayOffset > 0) {
-        timelineRef.current.scrollLeft = Math.max(0, (todayOffset - 3) * DAY_WIDTH);
+        timelineRef.current.scrollLeft = Math.max(0, (todayOffset - 3) * DAY_W);
       }
     }
   }, [timelineStart, viewOffset]);
@@ -143,7 +152,7 @@ export function TimelineView({ tasks, onUpdateDates, onUpdateTimes, onEditTask, 
           {/* Left: Task list */}
           <div
             className="flex-shrink-0 border-r"
-            style={{ width: TASK_LIST_WIDTH }}
+            style={{ width: TASK_LIST_W }}
           >
             {/* Header */}
             <div className="h-[52px] flex items-end px-3 pb-2 border-b bg-muted/30">
@@ -203,7 +212,7 @@ export function TimelineView({ tasks, onUpdateDates, onUpdateTimes, onEditTask, 
               style={{ maxHeight: Math.min(tasks.length * ROW_HEIGHT, 400) + 52 }}
               onScroll={handleTimelineScroll}
             >
-              <div style={{ minWidth: totalDays * DAY_WIDTH }}>
+              <div style={{ minWidth: totalDays * DAY_W }}>
                 {/* Day headers */}
                 <div className="flex sticky top-0 z-10 bg-muted/30 border-b" style={{ height: 52 }}>
                   {dayHeaders.map((day, i) => {
@@ -217,7 +226,7 @@ export function TimelineView({ tasks, onUpdateDates, onUpdateTimes, onEditTask, 
                           isWeekend && 'bg-muted/40',
                           isToday && 'bg-primary/10'
                         )}
-                        style={{ width: DAY_WIDTH }}
+                        style={{ width: DAY_W }}
                       >
                         <span className={cn('font-medium', isToday ? 'text-primary' : 'text-muted-foreground')}>
                           {format(day, 'EEE')}
@@ -244,6 +253,7 @@ export function TimelineView({ tasks, onUpdateDates, onUpdateTimes, onEditTask, 
                     totalDays={totalDays}
                     onUpdateDates={onUpdateDates}
                     onEditTask={onEditTask}
+                    dayWidth={DAY_W}
                   />
                 ))}
               </div>
@@ -261,9 +271,10 @@ interface RowProps {
   totalDays: number;
   onUpdateDates: (taskId: string, startDate: string, endDate: string) => void;
   onEditTask?: (task: TaskWithChangelog) => void;
+  dayWidth?: number;
 }
 
-function TimelineRow({ task, timelineStart, totalDays, onUpdateDates, onEditTask }: RowProps) {
+function TimelineRow({ task, timelineStart, totalDays, onUpdateDates, onEditTask, dayWidth = DAY_WIDTH }: RowProps) {
   const taskStart = task.start_date ? parseISO(task.start_date) : new Date(task.created_at);
   const taskEnd = task.end_date ? parseISO(task.end_date) : addDays(taskStart, 3);
 
@@ -296,7 +307,7 @@ function TimelineRow({ task, timelineStart, totalDays, onUpdateDates, onEditTask
 
     const handleMouseMove = (e: MouseEvent) => {
       const dx = e.clientX - dragOrigin.x;
-      const daysDelta = Math.round(dx / DAY_WIDTH);
+      const daysDelta = Math.round(dx / dayWidth);
       if (daysDelta !== 0) didDrag.current = true;
 
       if (dragging === 'move') {
@@ -340,8 +351,8 @@ function TimelineRow({ task, timelineStart, totalDays, onUpdateDates, onEditTask
   }, [pickerStart, pickerEnd, task.id, onUpdateDates]);
 
   const todayStr = format(new Date(), 'yyyy-MM-dd');
-  const barLeft = startOffset * DAY_WIDTH;
-  const barWidth = Math.max(DAY_WIDTH * 0.8, duration * DAY_WIDTH - 4);
+  const barLeft = startOffset * dayWidth;
+  const barWidth = Math.max(dayWidth * 0.8, duration * dayWidth - 4);
 
   return (
     <div
@@ -355,7 +366,7 @@ function TimelineRow({ task, timelineStart, totalDays, onUpdateDates, onEditTask
           return (
             <div
               className="absolute top-0 bottom-0 w-[2px] bg-primary/40 z-[1]"
-              style={{ left: todayOffset * DAY_WIDTH + DAY_WIDTH / 2 }}
+              style={{ left: todayOffset * dayWidth + dayWidth / 2 }}
             />
           );
         }
@@ -373,7 +384,7 @@ function TimelineRow({ task, timelineStart, totalDays, onUpdateDates, onEditTask
               'absolute top-0 bottom-0 border-l border-border/10',
               isWeekend && 'bg-muted/20'
             )}
-            style={{ left: i * DAY_WIDTH, width: DAY_WIDTH }}
+            style={{ left: i * dayWidth, width: dayWidth }}
           />
         );
       })}
