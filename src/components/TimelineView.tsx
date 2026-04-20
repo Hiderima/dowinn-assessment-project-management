@@ -111,7 +111,7 @@ export function TimelineView({ tasks, onUpdateDates, onUpdateTimes, onEditTask, 
     if (timelineRef.current && viewOffset === 0) {
       const todayOffset = differenceInDays(startOfDay(new Date()), timelineStart);
       if (todayOffset > 0) {
-        timelineRef.current.scrollLeft = Math.max(0, (todayOffset - 3) * DAY_WIDTH);
+        timelineRef.current.scrollLeft = Math.max(0, (todayOffset - 3) * DAY_W);
       }
     }
   }, [timelineStart, viewOffset]);
