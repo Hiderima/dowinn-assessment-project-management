@@ -46,8 +46,10 @@ const priorityBadge: Record<string, { bg: string; text: string }> = {
 };
 
 const TASK_LIST_WIDTH_DESKTOP = 320;
+const TASK_LIST_WIDTH_TABLET = 200;
 const TASK_LIST_WIDTH_MOBILE = 140;
 const DAY_WIDTH_DESKTOP = 44;
+const DAY_WIDTH_TABLET = 40;
 const DAY_WIDTH_MOBILE = 36;
 const ROW_HEIGHT = 52;
 // Default DAY_WIDTH used by TimelineRow (kept for backwards compatibility — overridden via prop)
@@ -63,8 +65,16 @@ export function TimelineView({ tasks, onUpdateDates, onUpdateTimes, onEditTask, 
   const timelineRef = useRef<HTMLDivElement>(null);
   const taskListRef = useRef<HTMLDivElement>(null);
   const isMobile = useIsMobile();
-  const DAY_W = isMobile ? DAY_WIDTH_MOBILE : DAY_WIDTH_DESKTOP;
-  const TASK_LIST_W = isMobile ? TASK_LIST_WIDTH_MOBILE : TASK_LIST_WIDTH_DESKTOP;
+  const [isTablet, setIsTablet] = useState(false);
+  useEffect(() => {
+    const mql = window.matchMedia('(min-width: 768px) and (max-width: 1279px)');
+    const update = () => setIsTablet(mql.matches);
+    update();
+    mql.addEventListener('change', update);
+    return () => mql.removeEventListener('change', update);
+  }, []);
+  const DAY_W = isMobile ? DAY_WIDTH_MOBILE : isTablet ? DAY_WIDTH_TABLET : DAY_WIDTH_DESKTOP;
+  const TASK_LIST_W = isMobile ? TASK_LIST_WIDTH_MOBILE : isTablet ? TASK_LIST_WIDTH_TABLET : TASK_LIST_WIDTH_DESKTOP;
 
   // Sync vertical scroll between task list and timeline
   const handleTimelineScroll = useCallback(() => {
@@ -182,7 +192,7 @@ export function TimelineView({ tasks, onUpdateDates, onUpdateTimes, onEditTask, 
                     <div className="text-xs font-medium text-card-foreground truncate">{task.title}</div>
                     {!isMobile && (
                       <div className="flex items-center gap-2 mt-1 flex-wrap">
-                        {projects && projects.length > 0 && (() => {
+                        {!isTablet && projects && projects.length > 0 && (() => {
                           const proj = projects.find(p => p.id === task.project_id);
                           return proj ? (
                             <span className="text-[10px] bg-primary/10 text-primary px-1.5 py-0.5 rounded font-medium truncate max-w-[110px]">{proj.name}</span>
