@@ -351,8 +351,8 @@ function TimelineRow({ task, timelineStart, totalDays, onUpdateDates, onEditTask
   }, [pickerStart, pickerEnd, task.id, onUpdateDates]);
 
   const todayStr = format(new Date(), 'yyyy-MM-dd');
-  const barLeft = startOffset * DAY_WIDTH;
-  const barWidth = Math.max(DAY_WIDTH * 0.8, duration * DAY_WIDTH - 4);
+  const barLeft = startOffset * dayWidth;
+  const barWidth = Math.max(dayWidth * 0.8, duration * dayWidth - 4);
 
   return (
     <div
