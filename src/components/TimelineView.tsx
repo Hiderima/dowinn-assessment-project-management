@@ -46,8 +46,10 @@ const priorityBadge: Record<string, { bg: string; text: string }> = {
 };
 
 const TASK_LIST_WIDTH_DESKTOP = 320;
+const TASK_LIST_WIDTH_TABLET = 200;
 const TASK_LIST_WIDTH_MOBILE = 140;
 const DAY_WIDTH_DESKTOP = 44;
+const DAY_WIDTH_TABLET = 40;
 const DAY_WIDTH_MOBILE = 36;
 const ROW_HEIGHT = 52;
 // Default DAY_WIDTH used by TimelineRow (kept for backwards compatibility — overridden via prop)
