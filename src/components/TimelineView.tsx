@@ -212,7 +212,7 @@ export function TimelineView({ tasks, onUpdateDates, onUpdateTimes, onEditTask, 
               style={{ maxHeight: Math.min(tasks.length * ROW_HEIGHT, 400) + 52 }}
               onScroll={handleTimelineScroll}
             >
-              <div style={{ minWidth: totalDays * DAY_WIDTH }}>
+              <div style={{ minWidth: totalDays * DAY_W }}>
                 {/* Day headers */}
                 <div className="flex sticky top-0 z-10 bg-muted/30 border-b" style={{ height: 52 }}>
                   {dayHeaders.map((day, i) => {
