@@ -65,8 +65,16 @@ export function TimelineView({ tasks, onUpdateDates, onUpdateTimes, onEditTask, 
   const timelineRef = useRef<HTMLDivElement>(null);
   const taskListRef = useRef<HTMLDivElement>(null);
   const isMobile = useIsMobile();
-  const DAY_W = isMobile ? DAY_WIDTH_MOBILE : DAY_WIDTH_DESKTOP;
-  const TASK_LIST_W = isMobile ? TASK_LIST_WIDTH_MOBILE : TASK_LIST_WIDTH_DESKTOP;
+  const [isTablet, setIsTablet] = useState(false);
+  useEffect(() => {
+    const mql = window.matchMedia('(min-width: 768px) and (max-width: 1279px)');
+    const update = () => setIsTablet(mql.matches);
+    update();
+    mql.addEventListener('change', update);
+    return () => mql.removeEventListener('change', update);
+  }, []);
+  const DAY_W = isMobile ? DAY_WIDTH_MOBILE : isTablet ? DAY_WIDTH_TABLET : DAY_WIDTH_DESKTOP;
+  const TASK_LIST_W = isMobile ? TASK_LIST_WIDTH_MOBILE : isTablet ? TASK_LIST_WIDTH_TABLET : TASK_LIST_WIDTH_DESKTOP;
 
   // Sync vertical scroll between task list and timeline
   const handleTimelineScroll = useCallback(() => {
