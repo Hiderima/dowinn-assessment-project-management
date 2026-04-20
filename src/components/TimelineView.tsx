@@ -168,7 +168,7 @@ export function TimelineView({ tasks, onUpdateDates, onUpdateTimes, onEditTask, 
               {tasks.map(task => (
                 <div
                   key={task.id}
-                  className="flex items-center gap-2 px-3 border-b border-border/30 hover:bg-muted/30 transition-colors cursor-pointer group"
+                  className="flex items-center gap-2 px-2 md:px-3 border-b border-border/30 hover:bg-muted/30 transition-colors cursor-pointer group"
                   style={{ height: ROW_HEIGHT }}
                   onClick={() => onEditTask?.(task)}
                 >
@@ -180,22 +180,29 @@ export function TimelineView({ tasks, onUpdateDates, onUpdateTimes, onEditTask, 
                   {/* Title + meta */}
                   <div className="flex-1 min-w-0">
                     <div className="text-xs font-medium text-card-foreground truncate">{task.title}</div>
-                    <div className="flex items-center gap-2 mt-1 flex-wrap">
-                      {projects && projects.length > 0 && (() => {
-                        const proj = projects.find(p => p.id === task.project_id);
-                        return proj ? (
-                          <span className="text-[10px] bg-primary/10 text-primary px-1.5 py-0.5 rounded font-medium truncate max-w-[110px]">{proj.name}</span>
-                        ) : null;
-                      })()}
-                      {task.assignee && (
-                        <span className="flex items-center gap-0.5 text-[10px] text-muted-foreground truncate max-w-[100px]">
-                          <User className="w-2.5 h-2.5 shrink-0" /> {formatAssignee(task.assignee)}
+                    {!isMobile && (
+                      <div className="flex items-center gap-2 mt-1 flex-wrap">
+                        {projects && projects.length > 0 && (() => {
+                          const proj = projects.find(p => p.id === task.project_id);
+                          return proj ? (
+                            <span className="text-[10px] bg-primary/10 text-primary px-1.5 py-0.5 rounded font-medium truncate max-w-[110px]">{proj.name}</span>
+                          ) : null;
+                        })()}
+                        {task.assignee && (
+                          <span className="flex items-center gap-0.5 text-[10px] text-muted-foreground truncate max-w-[100px]">
+                            <User className="w-2.5 h-2.5 shrink-0" /> {formatAssignee(task.assignee)}
+                          </span>
+                        )}
+                        <span className={cn('text-[9px] px-1.5 py-0.5 rounded font-medium', priorityBadge[task.priority].bg)}>
+                          {priorityBadge[task.priority].text}
                         </span>
-                      )}
-                      <span className={cn('text-[9px] px-1.5 py-0.5 rounded font-medium', priorityBadge[task.priority].bg)}>
-                        {priorityBadge[task.priority].text}
-                      </span>
-                    </div>
+                      </div>
+                    )}
+                    {isMobile && task.assignee && (
+                      <div className="text-[10px] text-muted-foreground truncate mt-0.5">
+                        {formatAssignee(task.assignee)}
+                      </div>
+                    )}
                   </div>
                   {/* Edit icon on hover */}
                   <Pencil className="w-3 h-3 text-muted-foreground opacity-0 group-hover:opacity-100 transition-opacity flex-shrink-0" />
