@@ -45,9 +45,14 @@ const priorityBadge: Record<string, { bg: string; text: string }> = {
   low: { bg: 'bg-green-500/15 text-green-400', text: 'Low' },
 };
 
-const TASK_LIST_WIDTH = 320;
-const DAY_WIDTH = 44;
+const TASK_LIST_WIDTH_DESKTOP = 320;
+const TASK_LIST_WIDTH_MOBILE = 140;
+const DAY_WIDTH_DESKTOP = 44;
+const DAY_WIDTH_MOBILE = 36;
 const ROW_HEIGHT = 52;
+// Default DAY_WIDTH used by TimelineRow (kept for backwards compatibility — overridden via prop)
+const DAY_WIDTH = DAY_WIDTH_DESKTOP;
+const TASK_LIST_WIDTH = TASK_LIST_WIDTH_DESKTOP;
 
 function formatAssignee(assignee: string) {
   // Strip employee number like "Name (123456)" → "Name"
