@@ -12,11 +12,12 @@ const COLUMNS = [
   { id: 'done' as const, title: 'Done', colorVar: 'var(--column-done)' },
 ];
 
+/** Props for the Kanban board. */
 interface Props {
-  tasks: TaskWithChangelog[];
-  loading: boolean;
-  onMoveTask: (taskId: string, newStatus: 'todo' | 'in_progress' | 'done') => void;
-  onEditTask?: (task: TaskWithChangelog) => void;
+  tasks: TaskWithChangelog[];                                                       // All tasks to distribute across columns.
+  loading: boolean;                                                                 // Show a spinner while true.
+  onMoveTask: (taskId: string, newStatus: 'todo' | 'in_progress' | 'done') => void; // Persist a drag-induced status change.
+  onEditTask?: (task: TaskWithChangelog) => void;                                   // Optional — open the edit modal.
 }
 
 /** Drag-and-drop Kanban board with three status columns + scoped AI assistant */

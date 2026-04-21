@@ -4,16 +4,19 @@ import { useAuth } from '@/contexts/AuthContext';
 import { toast } from 'sonner';
 import type { Tables } from '@/integrations/supabase/types';
 
+// Aliases for the auto-generated Supabase row types — keeps the rest of the file readable.
 type DbProject = Tables<'projects'>;
 type DbTask = Tables<'tasks'>;
 type DbChangelog = Tables<'task_changelog'>;
 
+/** A task row plus its sorted change-log entries. */
 export interface TaskWithChangelog extends DbTask {
-  changelog: DbChangelog[];
+  changelog: DbChangelog[]; // Chronologically sorted history entries for the task.
 }
 
+/** A project row plus a precomputed task count for sidebar badges. */
 export interface ProjectWithCount extends DbProject {
-  taskCount: number;
+  taskCount: number; // Number of tasks belonging to this project.
 }
 
 /* Priority sort order: high → medium → low */
@@ -32,6 +35,10 @@ function mapAndSortTasks(data: any[]): TaskWithChangelog[] {
   return mapped;
 }
 
+/**
+ * Central data hook — loads projects + tasks for the current user/view, exposes mutations
+ * (create/update/delete/move/seed) and keeps everything fresh via Supabase Realtime.
+ */
 export function useProjects() {
   const { user } = useAuth();
   const [projects, setProjects] = useState<ProjectWithCount[]>([]);

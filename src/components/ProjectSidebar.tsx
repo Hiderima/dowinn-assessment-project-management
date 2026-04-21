@@ -2,13 +2,14 @@ import { FolderKanban, Settings, Database, ChevronRight, Plus, LayoutGrid, UserC
 import type { Project } from '@/types/project';
 import { cn } from '@/lib/utils';
 
+/** Props for the project sidebar. */
 interface Props {
-  projects: Project[];
-  selectedId: string;
-  onSelect: (id: string) => void;
-  onSeed: () => void;
-  onAddProject: () => void;
-  apiAvailable: boolean;
+  projects: Project[];          // All projects to render in the list.
+  selectedId: string;           // Currently selected id (or virtual key: 'all' | 'my' | 'dept').
+  onSelect: (id: string) => void; // Called when the user picks a project or virtual view.
+  onSeed: () => void;           // Seed-database action.
+  onAddProject: () => void;     // Open the add-project modal.
+  apiAvailable: boolean;        // Whether the legacy REST API is reachable (shows demo-mode notice when false).
 }
 
 /** Reusable sidebar nav button */

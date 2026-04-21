@@ -21,6 +21,7 @@ import { useTheme } from '@/hooks/useTheme';
 import { useAdmin } from '@/hooks/useAdmin';
 import type { TaskWithChangelog } from '@/hooks/useProjects';
 
+/** Main authenticated page — sidebar + header + dynamic content (Kanban, Timeline, charts). */
 const Index = () => {
   const { user, signOut } = useAuth();
   const { projects, selectedProject, selectedProjectId, setSelectedProjectId, tasks, loading, moveTask, addProject, updateProject, deleteProject, addTask, updateTask, deleteTask, updateTaskDates, updateTaskTimes, seedDatabase } = useProjects();

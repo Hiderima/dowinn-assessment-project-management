@@ -10,11 +10,12 @@ const priorityStyles: Record<string, string> = {
   low: 'bg-muted text-muted-foreground',
 };
 
+/** Props for an individual draggable task card. */
 interface Props {
-  task: TaskWithChangelog;
-  index: number;
-  onOpenLog: (task: TaskWithChangelog) => void;
-  onEdit?: (task: TaskWithChangelog) => void;
+  task: TaskWithChangelog;                            // Task data with its changelog.
+  index: number;                                      // Position within the column (required by drag library).
+  onOpenLog: (task: TaskWithChangelog) => void;       // Open the change-log modal for this task.
+  onEdit?: (task: TaskWithChangelog) => void;         // Optional edit handler (opens edit modal).
 }
 
 /** Draggable task card shown inside a Kanban column */

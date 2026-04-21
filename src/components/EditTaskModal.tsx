@@ -3,13 +3,14 @@ import { X, Pencil, Trash2 } from 'lucide-react';
 import type { TaskWithChangelog } from '@/hooks/useProjects';
 import { useEmployees } from '@/hooks/useEmployees';
 
+/** Props for the edit-task modal. */
 interface Props {
-  open: boolean;
-  task: TaskWithChangelog | null;
-  onClose: () => void;
-  onUpdate: (taskId: string, updates: { title: string; description: string; priority: 'low' | 'medium' | 'high'; assignee: string; department: string }) => void;
-  onDelete: (taskId: string) => void;
-  onStatusChange?: (taskId: string, status: 'todo' | 'in_progress' | 'done') => void;
+  open: boolean;                                                                                                                                            // Controls modal visibility.
+  task: TaskWithChangelog | null;                                                                                                                            // Task being edited (null when closed).
+  onClose: () => void;                                                                                                                                       // Close handler.
+  onUpdate: (taskId: string, updates: { title: string; description: string; priority: 'low' | 'medium' | 'high'; assignee: string; department: string }) => void; // Save details handler.
+  onDelete: (taskId: string) => void;                                                                                                                        // Delete handler (requires confirm click).
+  onStatusChange?: (taskId: string, status: 'todo' | 'in_progress' | 'done') => void;                                                                        // Optional status mover (mirrors Kanban move).
 }
 
 /** Modal form for editing an existing task's details, status, and assignment */

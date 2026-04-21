@@ -3,14 +3,16 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/u
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@/components/ui/alert-dialog';
 import { Trash2 } from 'lucide-react';
 
+/** Props for the edit-project modal. */
 interface Props {
-  open: boolean;
-  project: { id: string; name: string; description: string | null } | null;
-  onClose: () => void;
-  onUpdate: (projectId: string, name: string, description: string) => void;
-  onDelete: (projectId: string) => void;
+  open: boolean;                                                                     // Controls dialog visibility.
+  project: { id: string; name: string; description: string | null } | null;          // Project being edited.
+  onClose: () => void;                                                               // Close handler.
+  onUpdate: (projectId: string, name: string, description: string) => void;          // Save handler.
+  onDelete: (projectId: string) => void;                                             // Delete handler (after confirm).
 }
 
+/** Modal for renaming/describing a project, with a guarded delete action. */
 export function EditProjectModal({ open, project, onClose, onUpdate, onDelete }: Props) {
   const [name, setName] = useState('');
   const [description, setDescription] = useState('');

@@ -1,3 +1,5 @@
+// Edge function: bootstraps the system administrator account (employee #676767).
+// Idempotent — if the account already exists it just ensures the admin role and profile fields.
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.49.4";
 
 const corsHeaders = {

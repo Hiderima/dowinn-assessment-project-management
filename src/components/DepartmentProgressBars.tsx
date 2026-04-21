@@ -2,11 +2,12 @@ import { useState, useEffect, useCallback } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useEmployees } from '@/hooks/useEmployees';
 
+/** Minimal task fields needed to compute department progress. */
 type DepartmentTask = {
-  id: string;
-  status: 'todo' | 'in_progress' | 'done';
-  assignee: string | null;
-  department: string | null;
+  id: string;                                       // Task id.
+  status: 'todo' | 'in_progress' | 'done';          // Current lifecycle state.
+  assignee: string | null;                          // Assignee string ("Name (employee#)").
+  department: string | null;                        // Explicit department, if set on the task.
 };
 
 /** Strip employee number suffix: "Name (123)" → "Name" */

@@ -1,9 +1,10 @@
 import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip } from 'recharts';
 import type { TaskWithChangelog, ProjectWithCount } from '@/hooks/useProjects';
 
+/** Props for the pie-chart distribution component. */
 interface Props {
-  tasks: TaskWithChangelog[];
-  projects?: ProjectWithCount[];
+  tasks: TaskWithChangelog[];      // Task set used for the slice counts.
+  projects?: ProjectWithCount[];   // Optional — when provided, also renders a per-project breakdown table.
 }
 
 /* Status color config used for pie slices and breakdown table */

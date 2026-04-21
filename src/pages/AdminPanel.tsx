@@ -18,15 +18,17 @@ import {
   Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
 } from '@/components/ui/select';
 
+/** User profile row as returned by the admin-users edge function. */
 interface Profile {
-  id: string;
-  user_id: string;
-  display_name: string | null;
-  employee_number: string | null;
-  department: string | null;
-  position: string | null;
+  id: string;                      // Profile row id.
+  user_id: string;                 // Linked auth user id.
+  display_name: string | null;     // Display name shown in lists.
+  employee_number: string | null;  // Login identifier (local-part of the synthetic email).
+  department: string | null;       // Department membership.
+  position: string | null;         // Job title.
 }
 
+/** Wrapper around the `admin-users` edge function — forwards the action and parses errors. */
 async function adminAction(action: string, body: Record<string, any>) {
   const { data: { session } } = await supabase.auth.getSession();
   const res = await supabase.functions.invoke('admin-users', {
@@ -37,6 +39,7 @@ async function adminAction(action: string, body: Record<string, any>) {
   return res.data;
 }
 
+/** Admin-only page — list, create, edit, delete users and reset passwords. */
 export default function AdminPanel() {
   const { signOut } = useAuth();
   const navigate = useNavigate();

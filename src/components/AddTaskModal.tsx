@@ -2,10 +2,11 @@ import { useState } from 'react';
 import { X, Plus } from 'lucide-react';
 import { useEmployees } from '@/hooks/useEmployees';
 
+/** Props for the add-task modal. */
 interface Props {
-  open: boolean;
-  onClose: () => void;
-  onAdd: (title: string, description: string, priority: 'low' | 'medium' | 'high', assignee: string, department: string) => void;
+  open: boolean;                                                                                                           // Controls modal visibility.
+  onClose: () => void;                                                                                                     // Close handler.
+  onAdd: (title: string, description: string, priority: 'low' | 'medium' | 'high', assignee: string, department: string) => void; // Submit handler.
 }
 
 /** Modal form for creating a new task with department & assignee selection */

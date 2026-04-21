@@ -1,3 +1,5 @@
+// Edge function: one-shot seeder that creates the predefined employee accounts and profiles.
+// Idempotent — skips employees whose profile row already exists.
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 
 const corsHeaders = {
@@ -5,6 +7,7 @@ const corsHeaders = {
   "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
 };
 
+// Predefined roster — each entry becomes an auth user (email = `<employee_number>@projectflow.app`).
 const employees = [
   { employee_number: "100000", password: "pass100000", name: "Maria Leonora", department: "Management", position: "CEO/President" },
   { employee_number: "200001", password: "pass200001", name: "Juan Dela Cruz", department: "Operations", position: "Chief Operating Officer (COO)" },

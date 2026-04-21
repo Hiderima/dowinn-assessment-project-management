@@ -1,7 +1,8 @@
 import type { TaskWithChangelog } from '@/hooks/useProjects';
 
+/** Props for the stacked project progress bar. */
 interface Props {
-  tasks: TaskWithChangelog[];
+  tasks: TaskWithChangelog[]; // Task set whose status distribution is summarised.
 }
 
 /** Stacked progress bar showing todo/in-progress/done distribution */
