@@ -1,3 +1,6 @@
+// Edge function: admin-only user management (list / create / update / password / delete)
+// Authenticates the caller, verifies their `admin` role, then performs the requested action
+// against Supabase Auth and the `profiles` table using the service-role key.
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.49.4";
 
 const corsHeaders = {
@@ -5,11 +8,13 @@ const corsHeaders = {
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 };
 
+// Service-role client — bypasses RLS so admins can read/write any profile.
 const supabaseAdmin = createClient(
   Deno.env.get("SUPABASE_URL")!,
   Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!
 );
 
+/** Returns true if the given user has the `admin` role. */
 async function isAdmin(userId: string): Promise<boolean> {
   const { data } = await supabaseAdmin
     .from("user_roles")
@@ -20,6 +25,7 @@ async function isAdmin(userId: string): Promise<boolean> {
   return !!data;
 }
 
+/** Resolve the calling user from the Authorization bearer token, or null if missing/invalid. */
 async function getAuthUser(req: Request) {
   const authHeader = req.headers.get("Authorization");
   if (!authHeader) return null;

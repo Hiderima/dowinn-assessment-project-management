@@ -8,17 +8,19 @@ import { Calendar } from '@/components/ui/calendar';
 import { Button } from '@/components/ui/button';
 import { useIsMobile } from '@/hooks/use-mobile';
 
+/** Lightweight project descriptor used for the timeline's project pill. */
 interface ProjectInfo {
-  id: string;
-  name: string;
+  id: string;   // Project id used to look up the task's project.
+  name: string; // Display name shown in the pill.
 }
 
+/** Props for the Gantt-style timeline view. */
 interface Props {
-  tasks: TaskWithChangelog[];
-  onUpdateDates: (taskId: string, startDate: string, endDate: string) => void;
-  onUpdateTimes?: (taskId: string, startTime: string, endTime: string) => void;
-  onEditTask?: (task: TaskWithChangelog) => void;
-  projects?: ProjectInfo[];
+  tasks: TaskWithChangelog[];                                                            // Tasks to render as bars.
+  onUpdateDates: (taskId: string, startDate: string, endDate: string) => void;           // Persist a drag/picker date change.
+  onUpdateTimes?: (taskId: string, startTime: string, endTime: string) => void;          // Optional — update start/end times.
+  onEditTask?: (task: TaskWithChangelog) => void;                                        // Optional — open the edit modal.
+  projects?: ProjectInfo[];                                                              // Optional — enables the project name pill on each row.
 }
 
 const statusColor: Record<string, string> = {
@@ -282,13 +284,14 @@ export function TimelineView({ tasks, onUpdateDates, onUpdateTimes, onEditTask, 
   );
 }
 
+/** Props for an individual draggable timeline row. */
 interface RowProps {
-  task: TaskWithChangelog;
-  timelineStart: Date;
-  totalDays: number;
-  onUpdateDates: (taskId: string, startDate: string, endDate: string) => void;
-  onEditTask?: (task: TaskWithChangelog) => void;
-  dayWidth?: number;
+  task: TaskWithChangelog;                                                       // Task represented by this row.
+  timelineStart: Date;                                                           // Date that x = 0 corresponds to.
+  totalDays: number;                                                             // Total number of day columns in the timeline.
+  onUpdateDates: (taskId: string, startDate: string, endDate: string) => void;   // Persist a date change.
+  onEditTask?: (task: TaskWithChangelog) => void;                                // Optional — open the edit modal.
+  dayWidth?: number;                                                             // Pixel width of one day column (responsive).
 }
 
 function TimelineRow({ task, timelineStart, totalDays, onUpdateDates, onEditTask, dayWidth = DAY_WIDTH }: RowProps) {

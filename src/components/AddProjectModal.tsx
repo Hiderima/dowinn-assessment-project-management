@@ -1,12 +1,14 @@
 import { useState } from 'react';
 import { X, FolderPlus } from 'lucide-react';
 
+/** Props for the add-project modal. */
 interface Props {
-  open: boolean;
-  onClose: () => void;
-  onAdd: (name: string, description: string) => void;
+  open: boolean;                                              // Controls modal visibility.
+  onClose: () => void;                                        // Close handler.
+  onAdd: (name: string, description: string) => void;        // Called with the new project's fields.
 }
 
+/** Modal form for creating a new project (name + optional description). */
 export function AddProjectModal({ open, onClose, onAdd }: Props) {
   const [name, setName] = useState('');
   const [description, setDescription] = useState('');

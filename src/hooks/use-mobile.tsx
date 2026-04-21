@@ -1,7 +1,9 @@
 import * as React from "react";
 
+// Width (px) below which the layout is treated as mobile.
 const MOBILE_BREAKPOINT = 768;
 
+/** Hook — true when the viewport is narrower than the mobile breakpoint. Reactive to resizes. */
 export function useIsMobile() {
   const [isMobile, setIsMobile] = React.useState<boolean | undefined>(undefined);
 

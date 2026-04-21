@@ -1,13 +1,14 @@
 import { useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 
+/** Employee profile row used throughout the assignee/department selectors. */
 export interface Employee {
-  id: string;
-  user_id: string;
-  display_name: string | null;
-  employee_number: string | null;
-  department: string | null;
-  position: string | null;
+  id: string;                       // Profile row id.
+  user_id: string;                  // Linked auth user id.
+  display_name: string | null;      // Human-readable name shown in dropdowns.
+  employee_number: string | null;   // Employee code, also used as the login local-part.
+  department: string | null;        // Department the employee belongs to.
+  position: string | null;          // Job title.
 }
 
 /** Fetches employee profiles and provides department-based helpers */

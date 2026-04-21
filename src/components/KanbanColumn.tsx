@@ -3,13 +3,14 @@ import { TaskCard } from './TaskCard';
 import { cn } from '@/lib/utils';
 import type { TaskWithChangelog } from '@/hooks/useProjects';
 
+/** Props for a single Kanban column. */
 interface Props {
-  status: string;
-  title: string;
-  colorVar: string;
-  tasks: TaskWithChangelog[];
-  onOpenLog: (task: TaskWithChangelog) => void;
-  onEdit?: (task: TaskWithChangelog) => void;
+  status: string;                                  // Droppable id matching the task status enum.
+  title: string;                                   // Header label.
+  colorVar: string;                                // CSS variable expression for the status dot.
+  tasks: TaskWithChangelog[];                      // Tasks belonging to this column.
+  onOpenLog: (task: TaskWithChangelog) => void;    // Open the change-log modal for a card.
+  onEdit?: (task: TaskWithChangelog) => void;      // Optional — open the edit modal.
 }
 
 /** Single droppable column in the Kanban board */

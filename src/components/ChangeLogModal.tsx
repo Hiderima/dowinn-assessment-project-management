@@ -1,9 +1,10 @@
 import { X, Clock } from 'lucide-react';
 import type { TaskWithChangelog } from '@/hooks/useProjects';
 
+/** Props for the change-log modal. */
 interface Props {
-  task: TaskWithChangelog;
-  onClose: () => void;
+  task: TaskWithChangelog; // Task whose history will be displayed.
+  onClose: () => void;     // Dismiss handler (also fires on backdrop click).
 }
 
 /** Modal showing chronological change history for a task */

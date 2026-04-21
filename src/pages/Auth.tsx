@@ -3,11 +3,13 @@ import { supabase } from '@/integrations/supabase/client';
 import { FolderKanban, Lock, Hash, ArrowRight } from 'lucide-react';
 import { toast } from 'sonner';
 
+/** Sign-in page — converts an employee number into an internal email and signs in via Supabase. */
 export default function Auth() {
   const [employeeNumber, setEmployeeNumber] = useState('');
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
 
+  // Submit handler — composes the synthetic email and attempts password sign-in.
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
